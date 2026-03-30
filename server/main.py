@@ -28,21 +28,26 @@ TEAM_ID = 86
 # ========================================================
 API_CACHE = {}
 
-def fetch_from_api(url):
-    now = time.time()
-    # אם שמרנו את המידע לפני פחות מ-60 שניות, נחזיר אותו מהזיכרון בחינם!
-    if url in API_CACHE and (now - API_CACHE[url]['time']) < 60:
-        return API_CACHE[url]['data'], 200
+def fetch_from_api(endpoint):
+    # שים פה את ה-URL והטוקן/API KEY האמיתיים שלך
+    url = f"http://api.football-data.org/{endpoint}" 
+    headers = {"X-Auth-Token": "YOUR_API_KEY_HERE"} 
+    
+    try:
+        # הקסם פה: timeout=5. אם אין תשובה תוך 5 שניות, מנתקים!
+        response = requests.get(url, headers=headers, timeout=5)
         
-    # אם אין בזיכרון, מבקשים באמת מה-API
-    response = requests.get(url, headers=HEADERS)
-    if response.status_code == 200:
-        data = response.json()
-        API_CACHE[url] = {'data': data, 'time': now} # שומרים לזיכרון
-        return data, 200
+        # אם ה-API חוסם אותנו (מחזיר שגיאת 403 או 429)
+        if response.status_code != 200:
+            print(f"Blocked by API! Status: {response.status_code}")
+            return {"error": True}
+            
+        return response.json()
         
-    return None, response.status_code
-
+    except Exception as e:
+        # אם יש טיים-אאוט או קריסה, מחזירים שגיאה מסודרת ל-React
+        print(f"API Connection Error: {e}")
+        return {"error": True}
 # ========================================================
 # הנתיבים (Endpoints) משתמשים עכשיו בקאש!
 # ========================================================
