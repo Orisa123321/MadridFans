@@ -28,27 +28,70 @@ TEAM_ID = 86
 # ========================================================
 API_CACHE = {}
 
+import requests
+
 def fetch_from_api(endpoint):
-    # שים פה את ה-URL והטוקן/API KEY האמיתיים שלך
-    url = f"http://api.football-data.org/{endpoint}" 
-    headers = {"X-Auth-Token": "96dd89fde61c7291a454ac842a3967a4"} 
+    url = f"http://api.football-data.org/{endpoint}"
+    headers = {"X-Auth-Token": "96dd89fde61c7291a454ac842a3967a4"} # אל תשכח לשים פה את הטוקן שלך!
     
     try:
-        # הקסם פה: timeout=5. אם אין תשובה תוך 5 שניות, מנתקים!
-        response = requests.get(url, headers=headers, timeout=5)
+        # אנחנו נותנים ל-API בדיוק 4 שניות לענות. אם הוא מסנן אותנו, אנחנו מפעילים את תוכנית החילוץ!
+        response = requests.get(url, headers=headers, timeout=4)
         
-        # אם ה-API חוסם אותנו (מחזיר שגיאת 403 או 429)
-        if response.status_code != 200:
-            print(f"Blocked by API! Status: {response.status_code}")
-            return {"error": True}
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"API Blocked us! (Status: {response.status_code}). Using fallback data.")
+            return get_fallback_data(endpoint)
             
-        return response.json()
-        
-    except Exception as e:
-        # אם יש טיים-אאוט או קריסה, מחזירים שגיאה מסודרת ל-React
-        print(f"API Connection Error: {e}")
-        return {"error": True}
+    except requests.exceptions.RequestException as e:
+        print(f"API Timeout/Error! Using fallback data. Error: {e}")
+        return get_fallback_data(endpoint)
 
+# ==========================================
+# 🚨 תוכנית החילוץ: נתונים קפואים שהאתר יציג אם חוסמים אותנו
+# ==========================================
+def get_fallback_data(endpoint):
+    if "teams/86" in endpoint and "matches" not in endpoint:
+        # נתוני הקבוצה
+        return {
+            "name": "Real Madrid CF",
+            "shortName": "Real Madrid",
+            "crest": "https://crests.football-data.org/86.png",
+            "venue": "Estadio Santiago Bernabéu"
+        }
+    
+    elif "matches" in endpoint:
+        # משחק הבא
+        return {
+            "matches": [{
+                "status": "TIMED",
+                "utcDate": "2024-05-25T19:00:00Z",
+                "homeTeam": {"name": "Real Madrid CF", "crest": "https://crests.football-data.org/86.png"},
+                "awayTeam": {"name": "FC Barcelona", "crest": "https://crests.football-data.org/81.svg"}
+            }]
+        }
+        
+    elif "standings" in endpoint:
+        # טבלה (דוגמה קצרה)
+        return {
+            "standings": [{"table": [
+                {"position": 1, "team": {"name": "Real Madrid CF", "crest": "https://crests.football-data.org/86.png"}, "playedGames": 38, "points": 95},
+                {"position": 2, "team": {"name": "FC Barcelona", "crest": "https://crests.football-data.org/81.svg"}, "playedGames": 38, "points": 85}
+            ]}]
+        }
+        
+    elif "scorers" in endpoint:
+        # כובשים
+        return {
+            "scorers": [
+                {"player": {"name": "Vinícius Júnior"}, "goals": 24, "assists": 11},
+                {"player": {"name": "Jude Bellingham"}, "goals": 23, "assists": 13}
+            ]
+        }
+        
+    # אם שום דבר לא תואם, נחזיר רשימה ריקה כדי שה-React לא יקרוס
+    return []
 # ========================================================
 # הנתיבים (Endpoints) משתמשים עכשיו בקאש!
 # ========================================================
