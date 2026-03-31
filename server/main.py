@@ -31,8 +31,7 @@ API_CACHE = {}
 def fetch_from_api(endpoint):
     # שים פה את ה-URL והטוקן/API KEY האמיתיים שלך
     url = f"http://api.football-data.org/{endpoint}" 
-    headers = {"X-Auth-Token": "96dd89fde61c7291a454ac842a3967a4
-"} 
+    headers = {"X-Auth-Token": "96dd89fde61c7291a454ac842a3967a4"} 
     
     try:
         # הקסם פה: timeout=5. אם אין תשובה תוך 5 שניות, מנתקים!
