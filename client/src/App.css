@@ -1,56 +1,132 @@
-/* איפוס בסיסי ויישור לימין (RTL) */
-.app-container {
-  font-family: system-ui, -apple-system, sans-serif;
-  color: white;
-  min-height: 100vh;
-  background-color: #0f172a;
+/* --- Global Reset & Spacing --- */
+:root {
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --text-color: #f8fafc;
+  --accent-color: #38bdf8;
+  --nav-bg: #0b1120;
 }
 
-/* עיצוב סרגל הניווט העליון */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+.app-container { min-height: 100vh; }
+
+/* --- Navbar --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1e293b;
-  padding: 1rem 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background-color: var(--nav-bg);
+  padding: 1rem 3rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
-.logo {
-  margin: 0;
-  color: #38bdf8;
-  font-size: 1.5rem;
-}
-
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
+.logo { margin: 0; color: var(--accent-color); font-size: 1.8rem; font-weight: 800; }
+.nav-links { display: flex; gap: 1.5rem; }
 .nav-links a {
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  color: var(--text-color); text-decoration: none; font-weight: 600;
+  padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.2s;
 }
+.nav-links a:hover { background-color: var(--card-bg); color: var(--accent-color); }
 
-.nav-links a:hover {
-  background-color: #334155;
-  color: #38bdf8;
-}
-
-/* עיצוב אזור התוכן המרכזי */
-.main-content {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
+/* --- Clean Content Styling --- */
+.main-content { padding: 2.5rem; max-width: 1200px; margin: 0 auto; }
 .page {
-  background-color: #1e293b;
-  padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
+  background-color: var(--card-bg); padding: 2.5rem; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
+.page h2 { font-size: 2.2rem; color: white; margin-top: 0; text-align: center; }
+.page p { text-align: center; color: #94a3b8; margin-bottom: 2rem; }
+
+/* --- Action Button --- */
+.action-btn {
+  margin-top: 30px; background-color: var(--accent-color); color: #0f172a;
+  border: none; padding: 12px 35px; font-size: 1.1rem; font-weight: bold;
+  border-radius: 30px; cursor: pointer; transition: transform 0.2s;
+  display: block; margin-left: auto; margin-right: auto;
+}
+.action-btn:hover { transform: scale(1.05); }
+
+/* --- Squad Builder Feature --- */
+.builder-container {
+  display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+  align-items: flex-start; /* CRITICAL: Stops the list from stretching down */
+}
+
+.pitch.full-pitch {
+  width: 420px; height: 600px; background-color: #15803d;
+  border: 4px solid white; border-radius: 12px; position: relative;
+  background-image: linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 100% 60px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  display: flex; flex-direction: column; justify-content: space-between; padding: 20px 0;
+}
+
+.position {
+  width: 65px; height: 65px; border: 2px dashed rgba(255,255,255,0.6);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 0.8rem; font-weight: bold; overflow: hidden;
+  background: rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+}
+.position:hover { transform: scale(1.1); border-color: #ef4444; }
+.position img { width: 100%; height: 100%; object-fit: cover; background: white;}
+
+.attack-row, .midfield-row, .defense-row, .goalie-row { display: flex; justify-content: space-evenly; width: 100%; }
+.midfield-row { margin-top: 20px; } .defense-row { margin-top: 20px; } .goalie-row { justify-content: center; margin-top: 10px;}
+
+/* Roster List (The Fix) */
+.player-list.extended-list {
+  width: 420px; background: var(--nav-bg); padding: 20px;
+  border-radius: 12px; max-height: 600px; overflow-y: auto; /* Adds the scrollbar! */
+}
+.player-list h3 { color: white; text-align: center; margin-top: 0; }
+
+.players-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; /* 3 Columns */
+}
+
+.player-card {
+  background: var(--card-bg); padding: 10px; border-radius: 10px;
+  cursor: pointer; transition: all 0.2s; text-align: center; position: relative;
+}
+.player-card:hover { transform: translateY(-3px); background: #334155; }
+.player-card img { width: 55px; height: 55px; border-radius: 50%; background: white; object-fit: cover;}
+.player-card p { margin: 8px 0 0 0; font-size: 0.85rem; font-weight: bold; }
+.player-card small { color: #94a3b8; font-size: 0.7rem; }
+
+.player-card.selected { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
+.player-number {
+  position: absolute; top: -5px; left: -5px; background: var(--accent-color);
+  color: #0f172a; border-radius: 50%; width: 22px; height: 22px; font-size: 0.7rem;
+  display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* --- Other Features (Ratings, Predictions, H2H) --- */
+.ratings-container { max-width: 500px; margin: 0 auto; }
+.rating-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px;}
+.rating-img { width: 50px; height: 50px; border-radius: 50%; background: white;}
+.rating-name { flex: 1; margin-right: 15px; text-align: right; font-weight: bold; }
+.rating-slider { flex: 2; margin: 0 15px; }
+.rating-score { background: var(--accent-color); color: #0f172a; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
+
+.prediction-board { display: flex; justify-content: center; align-items: center; gap: 30px; margin: 30px 0; }
+.team-pred { background: var(--nav-bg); padding: 20px; border-radius: 12px; text-align: center; }
+.team-pred input { width: 60px; height: 50px; font-size: 1.5rem; text-align: center; border-radius: 8px; border: none; background: var(--bg-color); color: white; }
+.vs-text { font-size: 2rem; font-weight: bold; }
+.scorer-select { text-align: center; }
+.scorer-select select { padding: 10px; font-size: 1.1rem; border-radius: 8px; background: var(--nav-bg); color: white; border: 1px solid #334155; }
+
+.h2h-container { display: flex; justify-content: center; align-items: center; gap: 40px; margin-top: 40px; }
+.h2h-card { background: var(--nav-bg); padding: 20px; border-radius: 16px; cursor: pointer; transition: transform 0.3s; width: 180px; text-align: center; }
+.h2h-card:hover { transform: translateY(-10px); }
+.h2h-card img { width: 120px; height: 120px; border-radius: 50%; background: white;}
+.vs-badge { background: #ef4444; color: white; padding: 15px; border-radius: 50%; font-weight: bold; }
+.result-bar { margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; color: #0f172a; }
+.winner { background: #4ade80; }
+.loser { background: #f87171; }
