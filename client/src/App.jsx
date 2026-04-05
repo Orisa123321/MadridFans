@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 
-// --- App.jsx (Replace playersData and SquadBuilder) ---
-
-// Expanded Real Madrid Squad 24/25 with basic details
+// --- 1. Expanded Real Madrid Squad 24/25 ---
 const playersData = [
   { id: 1, name: "Courtois", pos: "GK", number: 1, img: "https://ui-avatars.com/api/?name=Thibaut+Courtois&background=f8fafc&color=0f172a&bold=true" },
   { id: 13, name: "Lunin", pos: "GK", number: 13, img: "https://ui-avatars.com/api/?name=Andriy+Lunin&background=f8fafc&color=0f172a&bold=true" },
@@ -25,8 +23,8 @@ const playersData = [
   { id: 16, name: "Endrick", pos: "FW", number: 16, img: "https://ui-avatars.com/api/?name=Endrick&background=f8fafc&color=0f172a&bold=true" }
 ];
 
+// --- 2. Squad Builder Feature ---
 const SquadBuilder = () => {
-  // State for a full 11-man lineup (4-3-3 formation)
   const [lineup, setLineup] = useState({
     GK: null,
     DF1: null, DF2: null, DF3: null, DF4: null,
@@ -34,9 +32,7 @@ const SquadBuilder = () => {
     FW1: null, FW2: null, FW3: null
   });
 
-  // Smart function to find the first empty slot for the player's position
   const addToLineup = (player) => {
-    // Prevent duplicates
     const isAlreadyInLineup = Object.values(lineup).some(p => p && p.id === player.id);
     if (isAlreadyInLineup) return;
 
@@ -58,7 +54,6 @@ const SquadBuilder = () => {
     }
   };
 
-  // Remove player from pitch on click
   const removeFromLineup = (slot) => {
     setLineup(prev => ({ ...prev, [slot]: null }));
   };
@@ -69,46 +64,35 @@ const SquadBuilder = () => {
       <p>Select your 11 players for the next match. Click a player on the pitch to remove them.</p>
       
       <div className="builder-container">
-        {/* Full 11-man Pitch */}
         <div className="pitch full-pitch">
-          
           <div className="attack-row">
             <div className="position fw" onClick={() => removeFromLineup('FW1')}>{lineup.FW1 ? <img src={lineup.FW1.img} /> : "LW"}</div>
             <div className="position fw" onClick={() => removeFromLineup('FW2')}>{lineup.FW2 ? <img src={lineup.FW2.img} /> : "ST"}</div>
             <div className="position fw" onClick={() => removeFromLineup('FW3')}>{lineup.FW3 ? <img src={lineup.FW3.img} /> : "RW"}</div>
           </div>
-          
           <div className="midfield-row">
             <div className="position mf" onClick={() => removeFromLineup('MF1')}>{lineup.MF1 ? <img src={lineup.MF1.img} /> : "CM"}</div>
             <div className="position mf" onClick={() => removeFromLineup('MF2')}>{lineup.MF2 ? <img src={lineup.MF2.img} /> : "CDM"}</div>
             <div className="position mf" onClick={() => removeFromLineup('MF3')}>{lineup.MF3 ? <img src={lineup.MF3.img} /> : "CM"}</div>
           </div>
-          
           <div className="defense-row">
             <div className="position df" onClick={() => removeFromLineup('DF1')}>{lineup.DF1 ? <img src={lineup.DF1.img} /> : "LB"}</div>
             <div className="position df" onClick={() => removeFromLineup('DF2')}>{lineup.DF2 ? <img src={lineup.DF2.img} /> : "CB"}</div>
             <div className="position df" onClick={() => removeFromLineup('DF3')}>{lineup.DF3 ? <img src={lineup.DF3.img} /> : "CB"}</div>
             <div className="position df" onClick={() => removeFromLineup('DF4')}>{lineup.DF4 ? <img src={lineup.DF4.img} /> : "RB"}</div>
           </div>
-          
           <div className="goalie-row">
              <div className="position gk" onClick={() => removeFromLineup('GK')}>{lineup.GK ? <img src={lineup.GK.img} /> : "GK"}</div>
           </div>
-
         </div>
 
-        {/* Expanded Player Roster */}
         <div className="player-list extended-list">
           <h3>Squad Roster</h3>
           <div className="players-grid">
             {playersData.map(player => {
               const isSelected = Object.values(lineup).some(p => p && p.id === player.id);
               return (
-                <div 
-                  key={player.id} 
-                  className={`player-card ${isSelected ? 'selected' : ''}`} 
-                  onClick={() => addToLineup(player)}
-                >
+                <div key={player.id} className={`player-card ${isSelected ? 'selected' : ''}`} onClick={() => addToLineup(player)}>
                   <span className="player-number">{player.number}</span>
                   <img src={player.img} alt={player.name} />
                   <p>{player.name}</p>
@@ -119,13 +103,45 @@ const SquadBuilder = () => {
           </div>
         </div>
       </div>
-      
       <button className="action-btn">Save Lineup to Database</button>
     </div>
   );
 };
 
-// Feature 3: Predictions League
+// --- 3. Player Ratings Feature ---
+const PlayerRatings = () => {
+  const [ratings, setRatings] = useState({});
+
+  const handleRate = (id, value) => {
+    setRatings(prev => ({ ...prev, [id]: value }));
+  };
+
+  return (
+    <div className="page">
+      <h2>Match Ratings ⭐️</h2>
+      <p>Rate the players' performance from 1 to 10</p>
+      <div className="ratings-container">
+        {/* Just showing the first 8 players to keep the list manageable */}
+        {playersData.slice(0, 8).map(player => (
+          <div key={player.id} className="rating-row">
+            <img src={player.img} alt={player.name} className="rating-img" />
+            <span className="rating-name">{player.name}</span>
+            <input 
+              type="range" min="1" max="10" 
+              value={ratings[player.id] || 5} 
+              onChange={(e) => handleRate(player.id, e.target.value)} 
+              className="rating-slider"
+            />
+            <span className="rating-score">{ratings[player.id] || 5}</span>
+          </div>
+        ))}
+      </div>
+      <button className="action-btn" onClick={() => alert("Ratings submitted!")}>Submit Ratings</button>
+    </div>
+  );
+};
+
+// --- 4. Predictions League ---
 const Predictions = () => {
   const [prediction, setPrediction] = useState({ home: '', away: '', scorer: '' });
 
@@ -133,21 +149,17 @@ const Predictions = () => {
     <div className="page">
       <h2>Prediction League 🔮</h2>
       <p>Predict the exact score of the upcoming El Clásico!</p>
-      
       <div className="prediction-board">
         <div className="team-pred">
           <h3>Real Madrid</h3>
-          <input type="number" min="0" placeholder="0" 
-                 onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
+          <input type="number" min="0" placeholder="0" onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
         </div>
         <div className="vs-text">VS</div>
         <div className="team-pred">
           <h3>Barcelona</h3>
-          <input type="number" min="0" placeholder="0" 
-                 onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
+          <input type="number" min="0" placeholder="0" onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
         </div>
       </div>
-
       <div className="scorer-select">
         <h3>First Goalscorer?</h3>
         <select onChange={(e) => setPrediction({...prediction, scorer: e.target.value})}>
@@ -155,33 +167,28 @@ const Predictions = () => {
           {playersData.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
         </select>
       </div>
-
       <button className="action-btn" onClick={() => alert("Prediction saved!")}>Submit Prediction</button>
     </div>
   );
 };
 
-// Feature 4: Head to Head Debate
+// --- 5. Head to Head Debate ---
 const HeadToHead = () => {
-  // State to track if the user has voted to reveal results
   const [voted, setVoted] = useState(false);
 
   return (
     <div className="page">
       <h2>Head to Head ⚔️</h2>
       <h3>Who is the better midfielder this season?</h3>
-      
       <div className="h2h-container">
         <div className="h2h-card" onClick={() => setVoted(true)}>
-          <img src={playersData[3].img} alt="Bellingham" />
+          <img src={playersData[10].img} alt="Bellingham" />
           <h4>Bellingham</h4>
           {voted && <div className="result-bar winner">68%</div>}
         </div>
-        
         <div className="vs-badge">VS</div>
-        
         <div className="h2h-card" onClick={() => setVoted(true)}>
-          <img src={playersData[4].img} alt="Valverde" />
+          <img src={playersData[7].img} alt="Valverde" />
           <h4>Valverde</h4>
           {voted && <div className="result-bar loser">32%</div>}
         </div>
@@ -190,7 +197,7 @@ const HeadToHead = () => {
   );
 };
 
-// Home Page
+// --- 6. Home Page ---
 const Home = () => (
   <div className="page">
     <h2>Welcome to MadridFans 👑</h2>
@@ -198,7 +205,7 @@ const Home = () => (
   </div>
 );
 
-// Main App Router
+// --- 7. Main App Router ---
 function App() {
   return (
     <Router>
@@ -213,7 +220,6 @@ function App() {
             <Link to="/h2h">Head 2 Head</Link>
           </div>
         </nav>
-
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
