@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 
-// Mock database for players (Using EA FC / SoFifa open images)
+// Mock database for players (Using reliable UI-Avatars to prevent hotlink blocking)
 const playersData = [
-  { id: 1, name: "Courtois", pos: "GK", img: "https://cdn.sofifa.net/players/192/119/24_120.png" },
-  { id: 2, name: "Militao", pos: "DF", img: "https://cdn.sofifa.net/players/240/130/24_120.png" },
-  { id: 3, name: "Rudiger", pos: "DF", img: "https://cdn.sofifa.net/players/205/452/24_120.png" },
-  { id: 4, name: "Bellingham", pos: "MF", img: "https://cdn.sofifa.net/players/256/790/24_120.png" },
-  { id: 5, name: "Valverde", pos: "MF", img: "https://cdn.sofifa.net/players/239/053/24_120.png" },
-  { id: 6, name: "Vinicius", pos: "FW", img: "https://cdn.sofifa.net/players/238/794/24_120.png" },
-  { id: 7, name: "Mbappe", pos: "FW", img: "https://cdn.sofifa.net/players/231/747/24_120.png" },
-  { id: 8, name: "Rodrygo", pos: "FW", img: "https://cdn.sofifa.net/players/243/812/24_120.png" },
+  { id: 1, name: "Courtois", pos: "GK", img: "https://ui-avatars.com/api/?name=Thibaut+Courtois&background=f8fafc&color=0f172a&bold=true&size=150" },
+  { id: 2, name: "Militao", pos: "DF", img: "https://ui-avatars.com/api/?name=Eder+Militao&background=f8fafc&color=0f172a&bold=true&size=150" },
+  { id: 3, name: "Rudiger", pos: "DF", img: "https://ui-avatars.com/api/?name=Antonio+Rudiger&background=f8fafc&color=0f172a&bold=true&size=150" },
+  { id: 4, name: "Bellingham", pos: "MF", img: "https://ui-avatars.com/api/?name=Jude+Bellingham&background=f8fafc&color=0f172a&bold=true&size=150" },
+  { id: 5, name: "Valverde", pos: "MF", img: "https://ui-avatars.com/api/?name=Fede+Valverde&background=f8fafc&color=0f172a&bold=true&size=150" },
+  { id: 6, name: "Vinicius", pos: "FW", img: "https://ui-avatars.com/api/?name=Vinicius+Jr&background=f8fafc&color=0f172a&bold=true&size=150" },
+  { id: 7, name: "Mbappe", pos: "FW", img: "https://ui-avatars.com/api/?name=Kylian+Mbappe&background=f8fafc&color=0f172a&bold=true&size=150" },
+  { id: 8, name: "Rodrygo", pos: "FW", img: "https://ui-avatars.com/api/?name=Rodrygo+Goes&background=f8fafc&color=0f172a&bold=true&size=150" },
 ];
 
 // Feature 1: Squad Builder (Existing)
