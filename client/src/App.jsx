@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 
-// Mock database for players (Using stable ESPN images)
+// Mock database for players (Using EA FC / SoFifa open images)
 const playersData = [
-  { id: 1, name: "Courtois", pos: "GK", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/153169.png" },
-  { id: 2, name: "Militao", pos: "DF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/255863.png" },
-  { id: 3, name: "Rudiger", pos: "DF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/159041.png" },
-  { id: 4, name: "Bellingham", pos: "MF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/288096.png" },
-  { id: 5, name: "Valverde", pos: "MF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/253969.png" },
-  { id: 6, name: "Vinicius", pos: "FW", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/258526.png" },
-  { id: 7, name: "Mbappe", pos: "FW", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/229014.png" },
-  { id: 8, name: "Rodrygo", pos: "FW", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/268421.png" },
+  { id: 1, name: "Courtois", pos: "GK", img: "https://cdn.sofifa.net/players/192/119/24_120.png" },
+  { id: 2, name: "Militao", pos: "DF", img: "https://cdn.sofifa.net/players/240/130/24_120.png" },
+  { id: 3, name: "Rudiger", pos: "DF", img: "https://cdn.sofifa.net/players/205/452/24_120.png" },
+  { id: 4, name: "Bellingham", pos: "MF", img: "https://cdn.sofifa.net/players/256/790/24_120.png" },
+  { id: 5, name: "Valverde", pos: "MF", img: "https://cdn.sofifa.net/players/239/053/24_120.png" },
+  { id: 6, name: "Vinicius", pos: "FW", img: "https://cdn.sofifa.net/players/238/794/24_120.png" },
+  { id: 7, name: "Mbappe", pos: "FW", img: "https://cdn.sofifa.net/players/231/747/24_120.png" },
+  { id: 8, name: "Rodrygo", pos: "FW", img: "https://cdn.sofifa.net/players/243/812/24_120.png" },
 ];
 
 // Feature 1: Squad Builder (Existing)
