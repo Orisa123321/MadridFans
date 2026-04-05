@@ -94,7 +94,7 @@ body {
 }
 .action-btn:hover { transform: scale(1.05); }
 
-/* --- Squad Builder (Pitch) --- */
+/* --- Squad Builder (Full 11-Man Pitch) --- */
 .builder-container {
   display: flex;
   gap: 40px;
@@ -102,70 +102,85 @@ body {
   flex-wrap: wrap;
 }
 
-.pitch {
-  width: 380px;
-  height: 550px;
-  background-color: #15803d; /* Nice grass green */
+.full-pitch {
+  width: 420px;
+  height: 600px; /* Taller pitch for 11 players */
+  background-color: #15803d;
   border: 4px solid white;
   border-radius: 12px;
   position: relative;
   background-image: linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
-  background-size: 100% 55px;
+  background-size: 100% 60px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 0;
 }
 
 .position {
-  width: 75px;
-  height: 75px;
+  width: 65px; /* Slightly smaller to fit 4 defenders */
+  height: 65px;
   border: 2px dashed rgba(255,255,255,0.6);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
   color: white;
   font-size: 0.8rem;
   font-weight: bold;
   overflow: hidden;
   background: rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
 }
+.position:hover { transform: scale(1.1); border-color: #ef4444; /* Red border on hover to indicate removal */ }
 
 .position img { width: 100%; height: 100%; object-fit: cover; background: white;}
 
-.gk { bottom: 20px; left: 148px; }
-.midfield-row { position: absolute; top: 220px; width: 100%; display: flex; justify-content: space-around; }
-.attack-row { position: absolute; top: 50px; width: 100%; display: flex; justify-content: center; }
-
-.player-list {
-  width: 300px;
-  background: var(--nav-bg);
-  padding: 20px;
-  border-radius: 12px;
-  max-height: 550px;
-  overflow-y: auto;
+/* Pitch Rows */
+.attack-row, .midfield-row, .defense-row, .goalie-row {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
 }
+.midfield-row { margin-top: 20px; }
+.defense-row { margin-top: 20px; }
+.goalie-row { justify-content: center; margin-top: 10px;}
 
-.player-list h3 { color: white; text-align: center; margin-top: 0; }
-
-.players-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+/* Extended Roster List */
+.extended-list {
+  width: 380px; /* Wider list */
+  max-height: 600px;
 }
 
 .player-card {
-  background: var(--card-bg);
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
+  position: relative;
 }
 
-.player-card:hover { transform: translateY(-3px); background: #334155; }
-.player-card img { width: 55px; height: 55px; border-radius: 50%; background: white;}
-.player-card p { margin: 8px 0 0 0; font-size: 0.9rem; font-weight: bold; }
+/* Gray out selected players */
+.player-card.selected {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(100%);
+}
 
+.player-number {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: var(--accent-color);
+  color: #0f172a;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+.player-card small { color: #94a3b8; font-size: 0.75rem; }
 /* --- Ratings, Predictions, H2H Features --- */
 .ratings-container { max-width: 500px; margin: 0 auto; }
 .rating-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px;}
