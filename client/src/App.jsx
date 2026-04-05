@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 
-// Mock database for players
+// Mock database for players (Using stable ESPN images)
 const playersData = [
-  { id: 1, name: "Courtois", pos: "GK", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:356a655f-8468-4528-a461-1c322797e885/600x600-COURTOIS_550.png?preferwebp=true" },
-  { id: 2, name: "Militao", pos: "DF", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:d593006a-364e-4f51-827b-04473b98754b/600x600-MILITAO_550.png?preferwebp=true" },
-  { id: 3, name: "Rudiger", pos: "DF", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:2b399203-d648-4309-8086-11f8102d8474/600x600-RUDIGER_550.png?preferwebp=true" },
-  { id: 4, name: "Bellingham", pos: "MF", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:0b721867-27b3-4581-8178-013697e01297/600x600-BELLINGHAM_550.png?preferwebp=true" },
-  { id: 5, name: "Valverde", pos: "MF", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:54a233b8-61f2-45e0-94e8-8a892b9560f2/600x600-VALVERDE_550.png?preferwebp=true" },
-  { id: 6, name: "Vinicius", pos: "FW", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:09819779-798b-4971-9f93-51829e1f574d/600x600-VINICIUS_550.png?preferwebp=true" },
-  { id: 7, name: "Mbappe", pos: "FW", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:f278c2e6-a05d-4f10-9f17-f5e933e144a1/600x600-MBAPPE_550.png?preferwebp=true" },
-  { id: 8, name: "Rodrygo", pos: "FW", img: "https://publish-p47754-e237306.adobeaemcloud.com/adobe/dynamicmedia/deliver/dm-aid:f4c49896-1934-45e8-b807-67c858564f20/600x600-RODRYGO_550.png?preferwebp=true" },
+  { id: 1, name: "Courtois", pos: "GK", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/153169.png" },
+  { id: 2, name: "Militao", pos: "DF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/255863.png" },
+  { id: 3, name: "Rudiger", pos: "DF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/159041.png" },
+  { id: 4, name: "Bellingham", pos: "MF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/288096.png" },
+  { id: 5, name: "Valverde", pos: "MF", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/253969.png" },
+  { id: 6, name: "Vinicius", pos: "FW", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/258526.png" },
+  { id: 7, name: "Mbappe", pos: "FW", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/229014.png" },
+  { id: 8, name: "Rodrygo", pos: "FW", img: "https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/268421.png" },
 ];
 
 // Feature 1: Squad Builder (Existing)
