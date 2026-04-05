@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
+import { supabase } from './supabaseClient';
+
 
 // --- 1. Expanded Real Madrid Squad 24/25 ---
 const playersData = [
@@ -58,6 +60,32 @@ const SquadBuilder = () => {
     setLineup(prev => ({ ...prev, [slot]: null }));
   };
 
+  // Function to save the lineup to Supabase
+  const saveLineup = async () => {
+    // Check if the user selected at least one player
+    const isLineupEmpty = Object.values(lineup).every(player => player === null);
+    if (isLineupEmpty) {
+      alert("Please select at least one player before saving!");
+      return;
+    }
+
+    try {
+      // Insert the lineup object directly into the jsonb column
+      const { data, error } = await supabase
+        .from('lineups')
+        .insert([
+          { formation_data: lineup }
+        ]);
+
+      if (error) throw error;
+      
+      alert("Lineup saved successfully to the database! 🎉");
+    } catch (error) {
+      console.error("Error saving lineup:", error.message);
+      alert("There was an error saving your lineup. Check the console.");
+    }
+  };
+
   return (
     <div className="page squad-page">
       <h2>My Starting XI ⚽️</h2>
@@ -103,7 +131,7 @@ const SquadBuilder = () => {
           </div>
         </div>
       </div>
-      <button className="action-btn">Save Lineup to Database</button>
+      <button className="action-btn" onClick={saveLineup}>Save Lineup to Database</button>
     </div>
   );
 };
