@@ -1,226 +1,215 @@
-/* איפוס בסיסי ויישור לימין (RTL) */
-.app-container {
-  font-family: system-ui, -apple-system, sans-serif;
-  color: white;
-  min-height: 100vh;
-  background-color: #0f172a;
+/* --- Global Reset & Spacing --- */
+:root {
+  --bg-color: #0d1117; /* Very dark blue, nearly black */
+  --card-bg: #161b22;  /* Slightly lighter dark for cards */
+  --text-color: #c9d1d9; /* White-ish text */
+  --accent-color: #38bdf8; /* Accent blue */
+  --nav-bg: #161b22;
 }
 
-/* עיצוב סרגל הניווט העליון */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.app-container {
+  min-height: 100vh;
+}
+
+/* --- Improved Navbar --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #1e293b;
-  padding: 1rem 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background-color: var(--nav-bg);
+  padding: 1rem 3rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  position: sticky; /* Make navbar stick to top */
+  top: 0;
+  z-index: 1000;
 }
 
 .logo {
   margin: 0;
-  color: #38bdf8;
-  font-size: 1.5rem;
+  color: var(--accent-color);
+  font-size: 1.8rem;
+  font-weight: 800; /* Bolder logo */
 }
 
 .nav-links {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem; /* Better spacing */
 }
 
 .nav-links a {
-  color: white;
+  color: var(--text-color);
   text-decoration: none;
-  font-weight: bold;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-.nav-links a:hover {
-  background-color: #334155;
-  color: #38bdf8;
+.nav-links a:hover, .nav-links a.active {
+  background-color: #21262d;
+  color: var(--accent-color);
 }
 
-/* עיצוב אזור התוכן המרכזי */
+/* --- Clean Content Styling --- */
 .main-content {
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 2.5rem;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 .page {
-  background-color: #1e293b;
-  padding: 2rem;
-  border-radius: 12px;
+  background-color: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.page h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 1.5rem;
   text-align: center;
 }
 
+.page p {
+  text-align: center;
+  color: #8b949e;
+  max-width: 600px;
+  margin: 0 auto 2.5rem auto;
+}
+
+/* --- Global Action Button --- */
+.action-btn {
+  margin-top: 30px;
+  background-color: var(--accent-color);
+  color: #0d1117;
+  border: none;
+  padding: 14px 40px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.action-btn:hover {
+  transform: scale(1.05);
+  background-color: #7dd3fc;
+}
+
+/* --- Squad Builder (Pitch) --- */
 .builder-container {
   display: flex;
-  gap: 20px;
+  gap: 30px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .pitch {
-  width: 350px;
-  height: 500px;
-  background-color: #2e7d32;
-  border: 4px solid white;
-  border-radius: 15px;
+  width: 400px;
+  height: 550px;
+  background-color: #1a6d36; /* Better, darker green */
+  border: 6px solid rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
   position: relative;
-  background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
-  background-size: 100% 50px;
+  /* More realistic pitch lines */
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.2) 2px, transparent 2px),
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 2px, transparent 2px),
+    radial-gradient(circle at center, #1a6d36 60%, rgba(255, 255, 255, 0.8) 61%);
+  background-size: 100% 55px, 100% 100%, 120px 120px;
+  background-position: top center, top center, center;
+  background-repeat: repeat-y, no-repeat, no-repeat;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
 .position {
-  width: 70px;
-  height: 70px;
-  border: 2px dashed rgba(255,255,255,0.5);
+  width: 85px;
+  height: 85px;
+  border: 3px solid rgba(255, 255, 255, 0.6);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: absolute;
   color: white;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 700;
   overflow: hidden;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .position img { width: 100%; height: 100%; object-fit: cover; }
 
-.gk { bottom: 20px; left: 140px; }
-.midfield-row { position: absolute; top: 200px; width: 100%; display: flex; justify-content: space-around; }
-.attack-row { position: absolute; top: 50px; width: 100%; display: flex; justify-content: center; }
+.gk { bottom: 30px; left: 157.5px; }
+.midfield-row { position: absolute; top: 220px; width: 100%; display: flex; justify-content: space-around; }
+.attack-row { position: absolute; top: 60px; width: 100%; display: flex; justify-content: center; }
 
 .player-list {
-  width: 300px;
-  background: #1e293b;
-  padding: 15px;
-  border-radius: 12px;
-  max-height: 500px;
+  width: 320px;
+  background: var(--nav-bg);
+  padding: 20px;
+  border-radius: 16px;
+  max-height: 550px;
   overflow-y: auto;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
 }
+
+.player-list h3 { text-align: center; margin-bottom: 20px; color: white; }
 
 .players-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 15px;
 }
 
 .player-card {
-  background: #334155;
-  padding: 5px;
-  border-radius: 8px;
+  background-color: var(--card-bg);
+  padding: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
   text-align: center;
+  border: 1px solid transparent;
 }
 
-.player-card:hover { transform: scale(1.05); background: #475569; }
-.player-card img { width: 50px; height: 50px; border-radius: 50%; }
-
-.share-btn {
-  margin-top: 20px;
-  background: #38bdf8;
-  color: #0f172a;
-  border: none;
-  padding: 12px 24px;
-  font-weight: bold;
-  border-radius: 30px;
-  cursor: pointer;
+.player-card:hover { 
+  transform: translateY(-3px); 
+  background-color: #21262d;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border-color: #334155;
 }
-
-/* --- Global Action Button --- */
-.action-btn {
-  margin-top: 25px;
-  background: #38bdf8;
-  color: #0f172a;
-  border: none;
-  padding: 12px 30px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.action-btn:hover { transform: scale(1.05); }
+.player-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 8px; }
+.player-card p { font-size: 0.9rem; font-weight: 600; color: white; margin: 0; }
 
 /* --- Player Ratings Feature --- */
 .ratings-container {
-  max-width: 500px;
+  max-width: 600px;
   margin: 0 auto;
-  background: #1e293b;
-  padding: 20px;
-  border-radius: 12px;
+  background: var(--nav-bg);
+  padding: 30px;
+  border-radius: 16px;
 }
 .rating-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
   border-bottom: 1px solid #334155;
 }
-.rating-img { width: 50px; height: 50px; border-radius: 50%; }
-.rating-name { flex: 1; margin-right: 15px; text-align: right; font-weight: bold; }
-.rating-slider { flex: 2; margin: 0 15px; cursor: pointer; }
-.rating-score { background: #38bdf8; color: #0f172a; padding: 5px 10px; border-radius: 5px; font-weight: bold; width: 30px; text-align: center; }
-
-/* --- Predictions Feature --- */
-.prediction-board {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 30px;
-  margin: 30px 0;
-}
-.team-pred {
-  background: #334155;
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-}
-.team-pred input {
-  width: 80px;
-  height: 60px;
-  font-size: 2rem;
-  text-align: center;
-  border-radius: 8px;
-  border: none;
-  background: #0f172a;
-  color: white;
-}
-.vs-text { font-size: 2rem; font-weight: bold; color: #cbd5e1; }
-.scorer-select select {
-  padding: 10px;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  background: #334155;
-  color: white;
-  border: 1px solid #475569;
-}
-
-/* --- Head to Head Feature --- */
-.h2h-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 40px;
-  margin-top: 40px;
-}
-.h2h-card {
-  background: #334155;
-  padding: 20px;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: transform 0.3s;
-  width: 200px;
-}
-.h2h-card:hover { transform: translateY(-10px); background: #475569; }
-.h2h-card img { width: 150px; height: 150px; border-radius: 50%; }
-.vs-badge { background: #ef4444; color: white; padding: 15px; border-radius: 50%; font-weight: bold; }
-.result-bar { margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; color: #0f172a; }
-.winner { background: #4ade80; } /* Green */
-.loser { background: #f87171; }  /* Red */
+.rating-row:last-child { border-bottom: none; }
+.rating-img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.1); }
+.rating-name { flex: 1; margin-right: 20px; text-align: right; font
