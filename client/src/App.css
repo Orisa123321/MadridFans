@@ -200,3 +200,33 @@ html, body {
   color: #94a3b8;
   font-style: italic;
 }
+
+/* --- Predictions League Features --- */
+.prediction-form { align-items: center; }
+.recent-predictions { margin-top: 50px; text-align: center; }
+.recent-predictions h3 { color: var(--accent-color); font-size: 1.8rem; }
+.predictions-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+  gap: 20px; 
+  margin-top: 25px;
+}
+.prediction-card { 
+  background: var(--nav-bg); 
+  padding: 20px; 
+  border-radius: 12px; 
+  border-top: 4px solid var(--accent-color); 
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.prediction-card strong { color: white; display: block; margin-bottom: 5px; font-size: 1.1rem;}
+.score-display { 
+  font-size: 1.8rem; 
+  font-weight: 900; 
+  margin: 15px 0; 
+  color: white;
+  background: var(--bg-color);
+  padding: 10px;
+  border-radius: 8px;
+}
+.prediction-card small { color: #94a3b8; font-weight: bold;}
