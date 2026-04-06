@@ -200,19 +200,94 @@ const SquadBuilder = ({ t }) => {
     </div>
   );
 };
-
 const Predictions = ({ t }) => {
   const [prediction, setPrediction] = useState({ username: '', home: '', away: '', scorer: '' });
-  const handleSubmit = async () => {
-    await supabase.from('predictions').insert([{ username: prediction.username, home_score: prediction.home, away_score: prediction.away, scorer: prediction.scorer }]);
-    alert("Saved!");
+  const [recentPredictions, setRecentPredictions] = useState([]);
+
+  // Load predictions when page opens
+  useEffect(() => {
+    fetchPredictions();
+  }, []);
+
+  const fetchPredictions = async () => {
+    const { data, error } = await supabase
+      .from('predictions')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(9); // Show last 9 guesses
+    
+    if (!error) setRecentPredictions(data);
   };
+
+  const handleSubmit = async () => {
+    if (!prediction.username || prediction.home === '' || prediction.away === '' || !prediction.scorer) {
+      return alert("Please fill all fields!");
+    }
+
+    const { error } = await supabase.from('predictions').insert([{
+      username: prediction.username,
+      home_score: prediction.home,
+      away_score: prediction.away,
+      scorer: prediction.scorer
+    }]);
+
+    if (error) {
+      alert("Error saving prediction.");
+      console.error(error);
+    } else {
+      alert("Prediction saved! Good luck! 🤞");
+      setPrediction({ username: '', home: '', away: '', scorer: '' }); // Clear form
+      fetchPredictions(); // Refresh the board
+    }
+  };
+
   return (
-    <div className="page">
-      <h2>{t.predictions}</h2>
-      <div className="news-form">
-        <input type="text" placeholder={t.yourName} onChange={(e) => setPrediction({...prediction, username: e.target.value})} />
+    <div className="page predictions-page">
+      <h2>{t.predictions} 🔮</h2>
+      
+      <div className="news-form prediction-form">
+        <input 
+          type="text" placeholder={t.yourName} value={prediction.username}
+          onChange={(e) => setPrediction({...prediction, username: e.target.value})} 
+        />
+        
+        <div className="prediction-board">
+          <div className="team-pred">
+            <h3>R. Madrid</h3>
+            <input type="number" min="0" placeholder="0" value={prediction.home}
+                   onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
+          </div>
+          <div className="vs-text">VS</div>
+          <div className="team-pred">
+            <h3>Opponent</h3>
+            <input type="number" min="0" placeholder="0" value={prediction.away}
+                   onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
+          </div>
+        </div>
+
+        <div className="scorer-select">
+          <h3>First Goalscorer?</h3>
+          <select value={prediction.scorer} onChange={(e) => setPrediction({...prediction, scorer: e.target.value})}>
+            <option value="">Select a player...</option>
+            {playersData.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+          </select>
+        </div>
+
         <button className="action-btn" onClick={handleSubmit}>{t.submitPred}</button>
+      </div>
+
+      {/* Board of recent predictions from the community */}
+      <div className="recent-predictions">
+        <h3>Community Guesses 🏆</h3>
+        <div className="predictions-grid">
+           {recentPredictions.map(p => (
+             <div key={p.id} className="prediction-card">
+               <strong>{p.username}</strong> predicted:
+               <div className="score-display">RMA {p.home_score} - {p.away_score} OPP</div>
+               <small>First Scorer: {p.scorer}</small>
+             </div>
+           ))}
+        </div>
       </div>
     </div>
   );
