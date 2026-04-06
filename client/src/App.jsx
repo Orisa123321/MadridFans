@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import './App.css';
 import { supabase } from './supabaseClient';
+import './App.css';
 
-
-// --- 1. Expanded Real Madrid Squad 24/25 ---
+// --- Expanded Real Madrid Squad 24/25 ---
 const playersData = [
   { id: 1, name: "Courtois", pos: "GK", number: 1, img: "https://ui-avatars.com/api/?name=Thibaut+Courtois&background=f8fafc&color=0f172a&bold=true" },
   { id: 13, name: "Lunin", pos: "GK", number: 13, img: "https://ui-avatars.com/api/?name=Andriy+Lunin&background=f8fafc&color=0f172a&bold=true" },
@@ -25,22 +24,94 @@ const playersData = [
   { id: 16, name: "Endrick", pos: "FW", number: 16, img: "https://ui-avatars.com/api/?name=Endrick&background=f8fafc&color=0f172a&bold=true" }
 ];
 
-// --- 2. Squad Builder Feature ---
+// --- Feature 1: Community News / Articles ---
+const CommunityNews = () => {
+  const [articles, setArticles] = useState([]);
+  const [newArticle, setNewArticle] = useState({ title: '', author: '', content: '' });
+
+  // Fetch articles from Supabase when the page loads
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  const fetchArticles = async () => {
+    const { data, error } = await supabase
+      .from('articles')
+      .select('*')
+      .order('created_at', { ascending: false }); // Newest first
+    
+    if (error) console.error("Error fetching articles:", error);
+    else setArticles(data);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newArticle.title || !newArticle.author || !newArticle.content) return alert("Please fill all fields!");
+
+    const { error } = await supabase
+      .from('articles')
+      .insert([newArticle]);
+
+    if (error) {
+      alert("Error posting article.");
+      console.error(error);
+    } else {
+      setNewArticle({ title: '', author: '', content: '' }); // Clear form
+      fetchArticles(); // Refresh feed
+    }
+  };
+
+  return (
+    <div className="page news-page">
+      <h2>Community News 📰</h2>
+      <p>Read the latest updates or write your own article for the fans!</p>
+
+      {/* Form to write a new article */}
+      <form className="news-form" onSubmit={handleSubmit}>
+        <input 
+          type="text" placeholder="Article Title" value={newArticle.title}
+          onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} 
+        />
+        <input 
+          type="text" placeholder="Your Name" value={newArticle.author}
+          onChange={(e) => setNewArticle({...newArticle, author: e.target.value})} 
+        />
+        <textarea 
+          placeholder="Write your article here..." rows="4" value={newArticle.content}
+          onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} 
+        ></textarea>
+        <button type="submit" className="action-btn">Post Article</button>
+      </form>
+
+      {/* Feed of articles */}
+      <div className="articles-feed">
+        {articles.length === 0 ? <p className="no-articles">No articles yet. Be the first to write one!</p> : null}
+        
+        {articles.map((article) => (
+          <div key={article.id} className="article-card">
+            <h3>{article.title}</h3>
+            <small>By {article.author} • {new Date(article.created_at).toLocaleDateString()}</small>
+            <p>{article.content}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- Feature 2: Squad Builder ---
 const SquadBuilder = () => {
   const [lineup, setLineup] = useState({
-    GK: null,
-    DF1: null, DF2: null, DF3: null, DF4: null,
-    MF1: null, MF2: null, MF3: null,
-    FW1: null, FW2: null, FW3: null
+    GK: null, DF1: null, DF2: null, DF3: null, DF4: null,
+    MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null
   });
 
   const addToLineup = (player) => {
     const isAlreadyInLineup = Object.values(lineup).some(p => p && p.id === player.id);
     if (isAlreadyInLineup) return;
 
-    if (player.pos === "GK") {
-      setLineup(prev => ({ ...prev, GK: player }));
-    } else if (player.pos === "DF") {
+    if (player.pos === "GK") setLineup(prev => ({ ...prev, GK: player }));
+    else if (player.pos === "DF") {
       if (!lineup.DF1) setLineup(prev => ({ ...prev, DF1: player }));
       else if (!lineup.DF2) setLineup(prev => ({ ...prev, DF2: player }));
       else if (!lineup.DF3) setLineup(prev => ({ ...prev, DF3: player }));
@@ -56,29 +127,15 @@ const SquadBuilder = () => {
     }
   };
 
-  const removeFromLineup = (slot) => {
-    setLineup(prev => ({ ...prev, [slot]: null }));
-  };
+  const removeFromLineup = (slot) => setLineup(prev => ({ ...prev, [slot]: null }));
 
-  // Function to save the lineup to Supabase
   const saveLineup = async () => {
-    // Check if the user selected at least one player
     const isLineupEmpty = Object.values(lineup).every(player => player === null);
-    if (isLineupEmpty) {
-      alert("Please select at least one player before saving!");
-      return;
-    }
+    if (isLineupEmpty) return alert("Please select at least one player before saving!");
 
     try {
-      // Insert the lineup object directly into the jsonb column
-      const { data, error } = await supabase
-        .from('lineups')
-        .insert([
-          { formation_data: lineup }
-        ]);
-
+      const { error } = await supabase.from('lineups').insert([{ formation_data: lineup }]);
       if (error) throw error;
-      
       alert("Lineup saved successfully to the database! 🎉");
     } catch (error) {
       console.error("Error saving lineup:", error.message);
@@ -136,96 +193,7 @@ const SquadBuilder = () => {
   );
 };
 
-// --- 3. Player Ratings Feature ---
-const PlayerRatings = () => {
-  const [ratings, setRatings] = useState({});
-
-  const handleRate = (id, value) => {
-    setRatings(prev => ({ ...prev, [id]: value }));
-  };
-
-  return (
-    <div className="page">
-      <h2>Match Ratings ⭐️</h2>
-      <p>Rate the players' performance from 1 to 10</p>
-      <div className="ratings-container">
-        {/* Just showing the first 8 players to keep the list manageable */}
-        {playersData.slice(0, 8).map(player => (
-          <div key={player.id} className="rating-row">
-            <img src={player.img} alt={player.name} className="rating-img" />
-            <span className="rating-name">{player.name}</span>
-            <input 
-              type="range" min="1" max="10" 
-              value={ratings[player.id] || 5} 
-              onChange={(e) => handleRate(player.id, e.target.value)} 
-              className="rating-slider"
-            />
-            <span className="rating-score">{ratings[player.id] || 5}</span>
-          </div>
-        ))}
-      </div>
-      <button className="action-btn" onClick={() => alert("Ratings submitted!")}>Submit Ratings</button>
-    </div>
-  );
-};
-
-// --- 4. Predictions League ---
-const Predictions = () => {
-  const [prediction, setPrediction] = useState({ home: '', away: '', scorer: '' });
-
-  return (
-    <div className="page">
-      <h2>Prediction League 🔮</h2>
-      <p>Predict the exact score of the upcoming El Clásico!</p>
-      <div className="prediction-board">
-        <div className="team-pred">
-          <h3>Real Madrid</h3>
-          <input type="number" min="0" placeholder="0" onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
-        </div>
-        <div className="vs-text">VS</div>
-        <div className="team-pred">
-          <h3>Barcelona</h3>
-          <input type="number" min="0" placeholder="0" onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
-        </div>
-      </div>
-      <div className="scorer-select">
-        <h3>First Goalscorer?</h3>
-        <select onChange={(e) => setPrediction({...prediction, scorer: e.target.value})}>
-          <option value="">Select a player...</option>
-          {playersData.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-        </select>
-      </div>
-      <button className="action-btn" onClick={() => alert("Prediction saved!")}>Submit Prediction</button>
-    </div>
-  );
-};
-
-// --- 5. Head to Head Debate ---
-const HeadToHead = () => {
-  const [voted, setVoted] = useState(false);
-
-  return (
-    <div className="page">
-      <h2>Head to Head ⚔️</h2>
-      <h3>Who is the better midfielder this season?</h3>
-      <div className="h2h-container">
-        <div className="h2h-card" onClick={() => setVoted(true)}>
-          <img src={playersData[10].img} alt="Bellingham" />
-          <h4>Bellingham</h4>
-          {voted && <div className="result-bar winner">68%</div>}
-        </div>
-        <div className="vs-badge">VS</div>
-        <div className="h2h-card" onClick={() => setVoted(true)}>
-          <img src={playersData[7].img} alt="Valverde" />
-          <h4>Valverde</h4>
-          {voted && <div className="result-bar loser">32%</div>}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- 6. Home Page ---
+// --- Home Page ---
 const Home = () => (
   <div className="page">
     <h2>Welcome to MadridFans 👑</h2>
@@ -233,7 +201,7 @@ const Home = () => (
   </div>
 );
 
-// --- 7. Main App Router ---
+// --- Main App Router ---
 function App() {
   return (
     <Router>
@@ -242,19 +210,15 @@ function App() {
           <h1 className="logo">MadridFans</h1>
           <div className="nav-links">
             <Link to="/">Home</Link>
+            <Link to="/news">News</Link>  {/* NEW LINK */}
             <Link to="/squad">Squad</Link>
-            <Link to="/ratings">Ratings</Link>
-            <Link to="/predictions">Predictions</Link>
-            <Link to="/h2h">Head 2 Head</Link>
           </div>
         </nav>
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/news" element={<CommunityNews />} /> {/* NEW ROUTE */}
             <Route path="/squad" element={<SquadBuilder />} />
-            <Route path="/ratings" element={<PlayerRatings />} />
-            <Route path="/predictions" element={<Predictions />} />
-            <Route path="/h2h" element={<HeadToHead />} />
           </Routes>
         </main>
       </div>
