@@ -190,6 +190,9 @@ html, body {
   text-align: right;
   margin: 0;
   line-height: 1.6;
+  /* These two lines force long unbroken words to wrap to the next line */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .no-articles {
