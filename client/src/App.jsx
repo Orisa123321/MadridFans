@@ -100,15 +100,19 @@ function App() {
   );
 }
 
-// --- Modified Components to use 't' prop ---
 const CommunityNews = ({ t }) => {
   const [articles, setArticles] = useState([]);
   const [comments, setComments] = useState([]);
   const [newArticle, setNewArticle] = useState({ title: '', author: '', content: '' });
   
-  // State for handling comments section
-  const [showComments, setShowComments] = useState({}); // Tracks which article's comments are open
-  const [commentInputs, setCommentInputs] = useState({}); // Tracks input for new comments
+  const [showComments, setShowComments] = useState({});
+  const [commentInputs, setCommentInputs] = useState({}); 
+
+  // NEW: State to remember liked articles in this browser
+  const [likedArticles, setLikedArticles] = useState(() => {
+    const saved = localStorage.getItem('madridFansLikes');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => { 
     fetchArticles(); 
@@ -134,9 +138,19 @@ const CommunityNews = ({ t }) => {
     }
   };
 
+  // UPDATED: Like function with browser memory check
   const handleLike = async (id, currentLikes) => {
+    // Stop if already liked
+    if (likedArticles.includes(id)) return;
+
     const { error } = await supabase.from('articles').update({ likes: currentLikes + 1 }).eq('id', id);
-    if (!error) fetchArticles();
+    if (!error) {
+      // Save to browser memory
+      const updatedLikes = [...likedArticles, id];
+      setLikedArticles(updatedLikes);
+      localStorage.setItem('madridFansLikes', JSON.stringify(updatedLikes));
+      fetchArticles();
+    }
   };
 
   const handleCommentSubmit = async (articleId) => {
@@ -155,9 +169,7 @@ const CommunityNews = ({ t }) => {
     }
   };
 
-  // Telegram Share Logic
   const shareToTelegram = (title) => {
-    // Uses the actual deployed Vercel URL
     const url = encodeURIComponent("https://madrid-fans.vercel.app/news");
     const text = encodeURIComponent(`קראתי עכשיו את הכתבה "${title}" באפליקציית MadridFans! כנסו לקרוא 👑⚽`);
     window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
@@ -176,6 +188,7 @@ const CommunityNews = ({ t }) => {
       <div className="articles-feed">
         {articles.map(a => {
           const articleComments = comments.filter(c => c.article_id === a.id);
+          const hasLiked = likedArticles.includes(a.id); // Check if liked
           
           return (
             <div key={a.id} className="article-card">
@@ -184,8 +197,13 @@ const CommunityNews = ({ t }) => {
               <p>{a.content}</p>
               
               <div className="article-actions">
-                <button className="action-icon-btn like-btn" onClick={() => handleLike(a.id, a.likes || 0)}>
-                  ❤️ {a.likes || 0} {t.like}
+                {/* UPDATED: Like button UI changes if already liked */}
+                <button 
+                  className="action-icon-btn like-btn" 
+                  onClick={() => handleLike(a.id, a.likes || 0)}
+                  style={{ opacity: hasLiked ? 0.5 : 1, cursor: hasLiked ? 'not-allowed' : 'pointer' }}
+                >
+                  {hasLiked ? '🤍' : '❤️'} {a.likes || 0} {t.like}
                 </button>
                 <button className="action-icon-btn comment-btn" onClick={() => setShowComments({...showComments, [a.id]: !showComments[a.id]})}>
                   💬 {articleComments.length} {t.comments}
@@ -195,7 +213,6 @@ const CommunityNews = ({ t }) => {
                 </button>
               </div>
 
-              {/* Comments Section (Toggled) */}
               {showComments[a.id] && (
                 <div className="comments-section">
                   <div className="comments-list">
@@ -230,6 +247,8 @@ const CommunityNews = ({ t }) => {
     </div>
   );
 };
+
+
 const SquadBuilder = ({ t }) => {
   const [lineup, setLineup] = useState({ GK: null, DF1: null, DF2: null, DF3: null, DF4: null, MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null });
   
