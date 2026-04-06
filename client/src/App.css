@@ -230,3 +230,33 @@ html, body {
   border-radius: 8px;
 }
 .prediction-card small { color: #94a3b8; font-weight: bold;}
+
+.lang-toggle {
+  background: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+  margin-right: 15px;
+}
+
+.lang-toggle:hover {
+  background: var(--accent-color);
+  color: #0f172a;
+}
+
+/* Ensure text alignment shifts with direction */
+[dir="rtl"] {
+  text-align: right;
+}
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* Fix navbar layout for RTL */
+[dir="rtl"] .nav-links {
+  flex-direction: row;
+}
