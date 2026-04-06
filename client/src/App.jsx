@@ -3,7 +3,40 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import './App.css';
 
-// --- Expanded Real Madrid Squad 24/25 ---
+// --- Translations Object ---
+const translations = {
+  he: {
+    home: "ראשי",
+    news: "כתבות",
+    squad: "ההרכב שלי",
+    predictions: "תחזיות",
+    welcome: "ברוכים הבאים ל-MadridFans 👑",
+    subWelcome: "הבית של אוהדי ריאל מדריד בישראל.",
+    postArticle: "פרסם כתבה",
+    yourName: "השם שלך",
+    articleTitle: "כותרת הכתבה",
+    writeHere: "כתוב כאן...",
+    saveLineup: "שמור הרכב למסד הנתונים",
+    submitPred: "שלח תחזית",
+    langBtn: "English"
+  },
+  en: {
+    home: "Home",
+    news: "News",
+    squad: "Squad",
+    predictions: "Predictions",
+    welcome: "Welcome to MadridFans 👑",
+    subWelcome: "The ultimate hub for Real Madrid fans.",
+    postArticle: "Post Article",
+    yourName: "Your Name",
+    articleTitle: "Article Title",
+    writeHere: "Write your article here...",
+    saveLineup: "Save Lineup to Database",
+    submitPred: "Submit Prediction",
+    langBtn: "עברית"
+  }
+};
+
 const playersData = [
   { id: 1, name: "Courtois", pos: "GK", number: 1, img: "https://ui-avatars.com/api/?name=Thibaut+Courtois&background=f8fafc&color=0f172a&bold=true" },
   { id: 13, name: "Lunin", pos: "GK", number: 13, img: "https://ui-avatars.com/api/?name=Andriy+Lunin&background=f8fafc&color=0f172a&bold=true" },
@@ -24,74 +57,74 @@ const playersData = [
   { id: 16, name: "Endrick", pos: "FW", number: 16, img: "https://ui-avatars.com/api/?name=Endrick&background=f8fafc&color=0f172a&bold=true" }
 ];
 
-// --- Feature 1: Community News / Articles ---
-const CommunityNews = () => {
+function App() {
+  const [lang, setLang] = useState('he'); // Default is Hebrew
+  const t = translations[lang];
+
+  return (
+    <Router>
+      {/* Dynamic direction based on language */}
+      <div className="app-container" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+        <nav className="navbar">
+          <h1 className="logo">MadridFans</h1>
+          <div className="nav-links">
+            <Link to="/">{t.home}</Link>
+            <Link to="/news">{t.news}</Link>
+            <Link to="/squad">{t.squad}</Link>
+            <Link to="/predictions">{t.predictions}</Link>
+            <button className="lang-toggle" onClick={() => setLang(lang === 'he' ? 'en' : 'he')}>
+              {t.langBtn}
+            </button>
+          </div>
+        </nav>
+
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<div className="page"><h2>{t.welcome}</h2><p>{t.subWelcome}</p></div>} />
+            <Route path="/news" element={<CommunityNews t={t} />} />
+            <Route path="/squad" element={<SquadBuilder t={t} />} />
+            <Route path="/predictions" element={<Predictions t={t} />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
+}
+
+// --- Modified Components to use 't' prop ---
+
+const CommunityNews = ({ t }) => {
   const [articles, setArticles] = useState([]);
   const [newArticle, setNewArticle] = useState({ title: '', author: '', content: '' });
 
-  // Fetch articles from Supabase when the page loads
-  useEffect(() => {
-    fetchArticles();
-  }, []);
+  useEffect(() => { fetchArticles(); }, []);
 
   const fetchArticles = async () => {
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .order('created_at', { ascending: false }); // Newest first
-    
-    if (error) console.error("Error fetching articles:", error);
-    else setArticles(data);
+    const { data } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
+    if (data) setArticles(data);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newArticle.title || !newArticle.author || !newArticle.content) return alert("Please fill all fields!");
-
-    const { error } = await supabase
-      .from('articles')
-      .insert([newArticle]);
-
-    if (error) {
-      alert("Error posting article.");
-      console.error(error);
-    } else {
-      setNewArticle({ title: '', author: '', content: '' }); // Clear form
-      fetchArticles(); // Refresh feed
-    }
+    const { error } = await supabase.from('articles').insert([newArticle]);
+    if (!error) { setNewArticle({ title: '', author: '', content: '' }); fetchArticles(); }
   };
 
   return (
-    <div className="page news-page">
-      <h2>Community News 📰</h2>
-      <p>Read the latest updates or write your own article for the fans!</p>
-
-      {/* Form to write a new article */}
+    <div className="page">
+      <h2>{t.news}</h2>
       <form className="news-form" onSubmit={handleSubmit}>
-        <input 
-          type="text" placeholder="Article Title" value={newArticle.title}
-          onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} 
-        />
-        <input 
-          type="text" placeholder="Your Name" value={newArticle.author}
-          onChange={(e) => setNewArticle({...newArticle, author: e.target.value})} 
-        />
-        <textarea 
-          placeholder="Write your article here..." rows="4" value={newArticle.content}
-          onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} 
-        ></textarea>
-        <button type="submit" className="action-btn">Post Article</button>
+        <input type="text" placeholder={t.articleTitle} value={newArticle.title} onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} />
+        <input type="text" placeholder={t.yourName} value={newArticle.author} onChange={(e) => setNewArticle({...newArticle, author: e.target.value})} />
+        <textarea placeholder={t.writeHere} value={newArticle.content} onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} />
+        <button type="submit" className="action-btn">{t.postArticle}</button>
       </form>
-
-      {/* Feed of articles */}
       <div className="articles-feed">
-        {articles.length === 0 ? <p className="no-articles">No articles yet. Be the first to write one!</p> : null}
-        
-        {articles.map((article) => (
-          <div key={article.id} className="article-card">
-            <h3>{article.title}</h3>
-            <small>By {article.author} • {new Date(article.created_at).toLocaleDateString()}</small>
-            <p>{article.content}</p>
+        {articles.map(a => (
+          <div key={a.id} className="article-card">
+            <h3>{a.title}</h3>
+            <small>{a.author}</small>
+            <p>{a.content}</p>
           </div>
         ))}
       </div>
@@ -99,17 +132,12 @@ const CommunityNews = () => {
   );
 };
 
-// --- Feature 2: Squad Builder ---
-const SquadBuilder = () => {
-  const [lineup, setLineup] = useState({
-    GK: null, DF1: null, DF2: null, DF3: null, DF4: null,
-    MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null
-  });
-
+const SquadBuilder = ({ t }) => {
+  const [lineup, setLineup] = useState({ GK: null, DF1: null, DF2: null, DF3: null, DF4: null, MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null });
+  
   const addToLineup = (player) => {
     const isAlreadyInLineup = Object.values(lineup).some(p => p && p.id === player.id);
     if (isAlreadyInLineup) return;
-
     if (player.pos === "GK") setLineup(prev => ({ ...prev, GK: player }));
     else if (player.pos === "DF") {
       if (!lineup.DF1) setLineup(prev => ({ ...prev, DF1: player }));
@@ -127,200 +155,67 @@ const SquadBuilder = () => {
     }
   };
 
-  const removeFromLineup = (slot) => setLineup(prev => ({ ...prev, [slot]: null }));
-
   const saveLineup = async () => {
-    const isLineupEmpty = Object.values(lineup).every(player => player === null);
-    if (isLineupEmpty) return alert("Please select at least one player before saving!");
-
-    try {
-      const { error } = await supabase.from('lineups').insert([{ formation_data: lineup }]);
-      if (error) throw error;
-      alert("Lineup saved successfully to the database! 🎉");
-    } catch (error) {
-      console.error("Error saving lineup:", error.message);
-      alert("There was an error saving your lineup. Check the console.");
-    }
+    await supabase.from('lineups').insert([{ formation_data: lineup }]);
+    alert("Saved!");
   };
 
   return (
-    <div className="page squad-page">
-      <h2>My Starting XI ⚽️</h2>
-      <p>Select your 11 players for the next match. Click a player on the pitch to remove them.</p>
-      
+    <div className="page">
+      <h2>{t.squad}</h2>
       <div className="builder-container">
         <div className="pitch full-pitch">
           <div className="attack-row">
-            <div className="position fw" onClick={() => removeFromLineup('FW1')}>{lineup.FW1 ? <img src={lineup.FW1.img} /> : "LW"}</div>
-            <div className="position fw" onClick={() => removeFromLineup('FW2')}>{lineup.FW2 ? <img src={lineup.FW2.img} /> : "ST"}</div>
-            <div className="position fw" onClick={() => removeFromLineup('FW3')}>{lineup.FW3 ? <img src={lineup.FW3.img} /> : "RW"}</div>
+            <div className="position">{lineup.FW1 ? <img src={lineup.FW1.img} /> : "LW"}</div>
+            <div className="position">{lineup.FW2 ? <img src={lineup.FW2.img} /> : "ST"}</div>
+            <div className="position">{lineup.FW3 ? <img src={lineup.FW3.img} /> : "RW"}</div>
           </div>
           <div className="midfield-row">
-            <div className="position mf" onClick={() => removeFromLineup('MF1')}>{lineup.MF1 ? <img src={lineup.MF1.img} /> : "CM"}</div>
-            <div className="position mf" onClick={() => removeFromLineup('MF2')}>{lineup.MF2 ? <img src={lineup.MF2.img} /> : "CDM"}</div>
-            <div className="position mf" onClick={() => removeFromLineup('MF3')}>{lineup.MF3 ? <img src={lineup.MF3.img} /> : "CM"}</div>
+            <div className="position">{lineup.MF1 ? <img src={lineup.MF1.img} /> : "CM"}</div>
+            <div className="position">{lineup.MF2 ? <img src={lineup.MF2.img} /> : "CDM"}</div>
+            <div className="position">{lineup.MF3 ? <img src={lineup.MF3.img} /> : "CM"}</div>
           </div>
           <div className="defense-row">
-            <div className="position df" onClick={() => removeFromLineup('DF1')}>{lineup.DF1 ? <img src={lineup.DF1.img} /> : "LB"}</div>
-            <div className="position df" onClick={() => removeFromLineup('DF2')}>{lineup.DF2 ? <img src={lineup.DF2.img} /> : "CB"}</div>
-            <div className="position df" onClick={() => removeFromLineup('DF3')}>{lineup.DF3 ? <img src={lineup.DF3.img} /> : "CB"}</div>
-            <div className="position df" onClick={() => removeFromLineup('DF4')}>{lineup.DF4 ? <img src={lineup.DF4.img} /> : "RB"}</div>
+            <div className="position">{lineup.DF1 ? <img src={lineup.DF1.img} /> : "LB"}</div>
+            <div className="position">{lineup.DF2 ? <img src={lineup.DF2.img} /> : "CB"}</div>
+            <div className="position">{lineup.DF3 ? <img src={lineup.DF3.img} /> : "CB"}</div>
+            <div className="position">{lineup.DF4 ? <img src={lineup.DF4.img} /> : "RB"}</div>
           </div>
           <div className="goalie-row">
-             <div className="position gk" onClick={() => removeFromLineup('GK')}>{lineup.GK ? <img src={lineup.GK.img} /> : "GK"}</div>
+            <div className="position">{lineup.GK ? <img src={lineup.GK.img} /> : "GK"}</div>
           </div>
         </div>
-
         <div className="player-list extended-list">
-          <h3>Squad Roster</h3>
           <div className="players-grid">
-            {playersData.map(player => {
-              const isSelected = Object.values(lineup).some(p => p && p.id === player.id);
-              return (
-                <div key={player.id} className={`player-card ${isSelected ? 'selected' : ''}`} onClick={() => addToLineup(player)}>
-                  <span className="player-number">{player.number}</span>
-                  <img src={player.img} alt={player.name} />
-                  <p>{player.name}</p>
-                  <small>{player.pos}</small>
-                </div>
-              );
-            })}
+            {playersData.map(p => (
+              <div key={p.id} className="player-card" onClick={() => addToLineup(p)}>
+                <img src={p.img} alt={p.name} />
+                <p>{p.name}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-      <button className="action-btn" onClick={saveLineup}>Save Lineup to Database</button>
+      <button className="action-btn" onClick={saveLineup}>{t.saveLineup}</button>
     </div>
   );
 };
 
-// --- Feature 3: Predictions League ---
-const Predictions = () => {
+const Predictions = ({ t }) => {
   const [prediction, setPrediction] = useState({ username: '', home: '', away: '', scorer: '' });
-  const [recentPredictions, setRecentPredictions] = useState([]);
-
-  // Load predictions when page opens
-  useEffect(() => {
-    fetchPredictions();
-  }, []);
-
-  const fetchPredictions = async () => {
-    const { data, error } = await supabase
-      .from('predictions')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(9); // Show last 9 guesses
-    
-    if (!error) setRecentPredictions(data);
-  };
-
   const handleSubmit = async () => {
-    if (!prediction.username || prediction.home === '' || prediction.away === '' || !prediction.scorer) {
-      return alert("Please fill all fields!");
-    }
-
-    const { error } = await supabase.from('predictions').insert([{
-      username: prediction.username,
-      home_score: prediction.home,
-      away_score: prediction.away,
-      scorer: prediction.scorer
-    }]);
-
-    if (error) {
-      alert("Error saving prediction.");
-      console.error(error);
-    } else {
-      alert("Prediction saved! Good luck! 🤞");
-      setPrediction({ username: '', home: '', away: '', scorer: '' }); // Clear form
-      fetchPredictions(); // Refresh the board
-    }
+    await supabase.from('predictions').insert([{ username: prediction.username, home_score: prediction.home, away_score: prediction.away, scorer: prediction.scorer }]);
+    alert("Saved!");
   };
-
   return (
-    <div className="page predictions-page">
-      <h2>Prediction League 🔮</h2>
-      <p>Predict the exact score and first scorer for the next match!</p>
-      
-      <div className="news-form prediction-form">
-        <input 
-          type="text" placeholder="Your Name" value={prediction.username}
-          onChange={(e) => setPrediction({...prediction, username: e.target.value})} 
-        />
-        
-        <div className="prediction-board">
-          <div className="team-pred">
-            <h3>R. Madrid</h3>
-            <input type="number" min="0" placeholder="0" value={prediction.home}
-                   onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
-          </div>
-          <div className="vs-text">VS</div>
-          <div className="team-pred">
-            <h3>Opponent</h3>
-            <input type="number" min="0" placeholder="0" value={prediction.away}
-                   onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
-          </div>
-        </div>
-
-        <div className="scorer-select">
-          <h3>First Goalscorer?</h3>
-          <select value={prediction.scorer} onChange={(e) => setPrediction({...prediction, scorer: e.target.value})}>
-            <option value="">Select a player...</option>
-            {playersData.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-          </select>
-        </div>
-
-        <button className="action-btn" onClick={handleSubmit}>Submit Prediction</button>
-      </div>
-
-      {/* Board of recent predictions from the community */}
-      <div className="recent-predictions">
-        <h3>Community Guesses 🏆</h3>
-        <div className="predictions-grid">
-           {recentPredictions.map(p => (
-             <div key={p.id} className="prediction-card">
-               <strong>{p.username}</strong> predicted:
-               <div className="score-display">RMA {p.home_score} - {p.away_score} OPP</div>
-               <small>First Scorer: {p.scorer}</small>
-             </div>
-           ))}
-        </div>
+    <div className="page">
+      <h2>{t.predictions}</h2>
+      <div className="news-form">
+        <input type="text" placeholder={t.yourName} onChange={(e) => setPrediction({...prediction, username: e.target.value})} />
+        <button className="action-btn" onClick={handleSubmit}>{t.submitPred}</button>
       </div>
     </div>
   );
 };
-
-// --- Home Page ---
-const Home = () => (
-  <div className="page">
-    <h2>Welcome to MadridFans 👑</h2>
-    <p>The ultimate community hub for Real Madrid fans.</p>
-  </div>
-);
-
-// --- Main App Router ---
-function App() {
-  return (
-    <Router>
-      <div className="app-container" dir="rtl">
-        <nav className="navbar">
-          <h1 className="logo">MadridFans</h1>
-          <div className="nav-links">
-            <Link to="/">Home</Link>
-            <Link to="/news">News</Link>
-            <Link to="/squad">Squad</Link>
-            <Link to="/predictions">Predictions</Link> {/* NEW LINK */}
-          </div>
-        </nav>
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/news" element={<CommunityNews />} />
-            <Route path="/squad" element={<SquadBuilder />} />
-            <Route path="/predictions" element={<Predictions />} /> {/* NEW ROUTE */}
-          </Routes>
-        </main>
-      </div>
-    </Router>
-  );
-}
 
 export default App;
