@@ -18,7 +18,12 @@ const translations = {
     writeHere: "כתוב כאן...",
     saveLineup: "שמור הרכב למסד הנתונים",
     submitPred: "שלח תחזית",
-    langBtn: "English"
+    langBtn: "English",
+    like: "אהבתי",
+    comments: "תגובות",
+    writeComment: "כתוב תגובה...",
+    send: "שלח",
+    share: "שתף בטלגרם"
   },
   en: {
     home: "Home",
@@ -33,10 +38,14 @@ const translations = {
     writeHere: "Write your article here...",
     saveLineup: "Save Lineup to Database",
     submitPred: "Submit Prediction",
-    langBtn: "עברית"
+    langBtn: "עברית",
+    like: "Like",
+    comments: "Comments",
+    writeComment: "Write a comment...",
+    send: "Send",
+    share: "Share on Telegram"
   }
 };
-
 const playersData = [
   { id: 1, name: "Courtois", pos: "GK", number: 1, img: "https://ui-avatars.com/api/?name=Thibaut+Courtois&background=f8fafc&color=0f172a&bold=true" },
   { id: 13, name: "Lunin", pos: "GK", number: 13, img: "https://ui-avatars.com/api/?name=Andriy+Lunin&background=f8fafc&color=0f172a&bold=true" },
@@ -92,46 +101,135 @@ function App() {
 }
 
 // --- Modified Components to use 't' prop ---
-
 const CommunityNews = ({ t }) => {
   const [articles, setArticles] = useState([]);
+  const [comments, setComments] = useState([]);
   const [newArticle, setNewArticle] = useState({ title: '', author: '', content: '' });
+  
+  // State for handling comments section
+  const [showComments, setShowComments] = useState({}); // Tracks which article's comments are open
+  const [commentInputs, setCommentInputs] = useState({}); // Tracks input for new comments
 
-  useEffect(() => { fetchArticles(); }, []);
+  useEffect(() => { 
+    fetchArticles(); 
+    fetchComments();
+  }, []);
 
   const fetchArticles = async () => {
     const { data } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
     if (data) setArticles(data);
   };
 
+  const fetchComments = async () => {
+    const { data } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+    if (data) setComments(data);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { error } = await supabase.from('articles').insert([newArticle]);
-    if (!error) { setNewArticle({ title: '', author: '', content: '' }); fetchArticles(); }
+    if (!error) { 
+      setNewArticle({ title: '', author: '', content: '' }); 
+      fetchArticles(); 
+    }
+  };
+
+  const handleLike = async (id, currentLikes) => {
+    const { error } = await supabase.from('articles').update({ likes: currentLikes + 1 }).eq('id', id);
+    if (!error) fetchArticles();
+  };
+
+  const handleCommentSubmit = async (articleId) => {
+    const input = commentInputs[articleId];
+    if (!input || !input.author || !input.content) return;
+    
+    const { error } = await supabase.from('comments').insert([{ 
+      article_id: articleId, 
+      author: input.author, 
+      content: input.content 
+    }]);
+
+    if (!error) {
+      setCommentInputs({ ...commentInputs, [articleId]: { author: '', content: '' } });
+      fetchComments();
+    }
+  };
+
+  // Telegram Share Logic
+  const shareToTelegram = (title) => {
+    // Uses the actual deployed Vercel URL
+    const url = encodeURIComponent("https://madrid-fans.vercel.app/news");
+    const text = encodeURIComponent(`קראתי עכשיו את הכתבה "${title}" באפליקציית MadridFans! כנסו לקרוא 👑⚽`);
+    window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
   };
 
   return (
     <div className="page">
-      <h2>{t.news}</h2>
+      <h2>{t.news} 📰</h2>
       <form className="news-form" onSubmit={handleSubmit}>
-        <input type="text" placeholder={t.articleTitle} value={newArticle.title} onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} />
-        <input type="text" placeholder={t.yourName} value={newArticle.author} onChange={(e) => setNewArticle({...newArticle, author: e.target.value})} />
-        <textarea placeholder={t.writeHere} value={newArticle.content} onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} />
+        <input type="text" placeholder={t.articleTitle} value={newArticle.title} onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} required />
+        <input type="text" placeholder={t.yourName} value={newArticle.author} onChange={(e) => setNewArticle({...newArticle, author: e.target.value})} required />
+        <textarea placeholder={t.writeHere} value={newArticle.content} onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} required rows="4" />
         <button type="submit" className="action-btn">{t.postArticle}</button>
       </form>
+      
       <div className="articles-feed">
-        {articles.map(a => (
-          <div key={a.id} className="article-card">
-            <h3>{a.title}</h3>
-            <small>{a.author}</small>
-            <p>{a.content}</p>
-          </div>
-        ))}
+        {articles.map(a => {
+          const articleComments = comments.filter(c => c.article_id === a.id);
+          
+          return (
+            <div key={a.id} className="article-card">
+              <h3>{a.title}</h3>
+              <small>{a.author} • {new Date(a.created_at).toLocaleDateString()}</small>
+              <p>{a.content}</p>
+              
+              <div className="article-actions">
+                <button className="action-icon-btn like-btn" onClick={() => handleLike(a.id, a.likes || 0)}>
+                  ❤️ {a.likes || 0} {t.like}
+                </button>
+                <button className="action-icon-btn comment-btn" onClick={() => setShowComments({...showComments, [a.id]: !showComments[a.id]})}>
+                  💬 {articleComments.length} {t.comments}
+                </button>
+                <button className="action-icon-btn tg-btn" onClick={() => shareToTelegram(a.title)}>
+                  ✈️ {t.share}
+                </button>
+              </div>
+
+              {/* Comments Section (Toggled) */}
+              {showComments[a.id] && (
+                <div className="comments-section">
+                  <div className="comments-list">
+                    {articleComments.map(c => (
+                      <div key={c.id} className="comment-bubble">
+                        <strong>{c.author}:</strong> {c.content}
+                      </div>
+                    ))}
+                    {articleComments.length === 0 && <span className="no-comments">אין עדיין תגובות. תהיו הראשונים!</span>}
+                  </div>
+                  
+                  <div className="add-comment-box">
+                    <input 
+                      type="text" placeholder={t.yourName} 
+                      value={commentInputs[a.id]?.author || ''}
+                      onChange={(e) => setCommentInputs({...commentInputs, [a.id]: {...commentInputs[a.id], author: e.target.value}})}
+                    />
+                    <input 
+                      type="text" placeholder={t.writeComment} 
+                      value={commentInputs[a.id]?.content || ''}
+                      onChange={(e) => setCommentInputs({...commentInputs, [a.id]: {...commentInputs[a.id], content: e.target.value}})}
+                    />
+                    <button onClick={() => handleCommentSubmit(a.id)}>{t.send}</button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
-
 const SquadBuilder = ({ t }) => {
   const [lineup, setLineup] = useState({ GK: null, DF1: null, DF2: null, DF3: null, DF4: null, MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null });
   
