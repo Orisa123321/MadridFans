@@ -341,3 +341,31 @@ html, body {
   cursor: pointer;
 }
 .add-comment-box button:hover { opacity: 0.9; }
+
+.google-btn {
+  background: white;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.google-btn:hover {
+  background: #f1f5f9;
+}
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+.divider {
+  text-align: center;
+  border-bottom: 1px solid #334155;
+  line-height: 0.1em;
+  margin: 20px 0;
+  color: #94a3b8;
+}
+.divider span {
+  background: var(--bg-color);
+  padding: 0 10px;
+}
