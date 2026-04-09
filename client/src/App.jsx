@@ -73,25 +73,22 @@ const AuthScreen = ({ t }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate(); // נווט אוטומטי
 
   const handleAuth = async (e) => {
     e.preventDefault();
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert(error.message);
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) alert(error.message);
-    }
+    const { error } = isLogin 
+      ? await supabase.auth.signInWithPassword({ email, password })
+      : await supabase.auth.signUp({ email, password });
+      
+    if (error) alert(error.message);
+    else navigate('/'); // חזור לדף הבית אחרי התחברות
   };
 
-  // הפונקציה החדשה להתחברות עם גוגל
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: 'https://realmadridgalacticos.vercel.app/'
-      }
+      options: { redirectTo: 'https://realmadridgalacticos.vercel.app/' }
     });
     if (error) alert(error.message);
   };
@@ -100,7 +97,6 @@ const AuthScreen = ({ t }) => {
     <div className="page auth-page">
       <h2>{isLogin ? t.login : t.signup} 🛡️</h2>
       
-      {/* כפתור גוגל החדש */}
       <button type="button" className="action-btn google-btn" onClick={handleGoogleLogin}>
         <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="google-icon" />
         {t.googleLogin || "התחבר עם Google"}
@@ -108,13 +104,13 @@ const AuthScreen = ({ t }) => {
 
       <div className="divider"><span>או עם אימייל</span></div>
 
-      <form className="news-form" onSubmit={handleAuth}>
-        <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder={t.password} value={password} onChange={(e) => setPassword(e.target.value)} required minLength="6" />
-        <button type="submit" className="action-btn">{isLogin ? t.login : t.signup}</button>
+      <form className="news-form auth-form" onSubmit={handleAuth}>
+        <input type="email" placeholder={t.email || "אימייל"} value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input type="password" placeholder={t.password || "סיסמה"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength="6" />
+        <button type="submit" className="action-btn submit-auth-btn">{isLogin ? (t.login || "התחבר") : (t.signup || "הירשם")}</button>
       </form>
       <p className="auth-toggle" onClick={() => setIsLogin(!isLogin)}>
-        {isLogin ? t.noAccount : t.hasAccount}
+        {isLogin ? (t.noAccount || "אין חשבון? הירשם") : (t.hasAccount || "יש חשבון? התחבר")}
       </p>
     </div>
   );
@@ -145,36 +141,29 @@ function App() {
           <h1 className="logo">Real Madrid Galacticos</h1>
           <div className="nav-links">
             <button className="lang-toggle" onClick={() => setLang(lang === 'he' ? 'en' : 'he')}>{t.langBtn}</button>
-            {session && (
-              <>
-                <Link to="/">{t.home}</Link>
-                <Link to="/news">{t.news}</Link>
-                <Link to="/squad">{t.squad}</Link>
-                <Link to="/predictions">{t.predictions}</Link>
-                {/* הנה הכפתור שחזר! */}
-                <button className="logout-btn" onClick={handleLogout}>{t.logout}</button>
-              </>
+            <Link to="/">{t.home}</Link>
+            <Link to="/news">{t.news}</Link>
+            <Link to="/squad">{t.squad}</Link>
+            <Link to="/predictions">{t.predictions}</Link>
+            
+            {/* אם מחובר - התנתק. אם אורח - כפתור התחברות */}
+            {session ? (
+              <button className="logout-btn" onClick={handleLogout}>{t.logout}</button>
+            ) : (
+              <Link to="/login" className="login-btn-nav">{t.login}</Link>
             )}
           </div>
         </nav>
 
         <main className="main-content">
-          {!session ? (
-            <AuthScreen t={t} />
-          ) : (
-            <Routes>
-              {/* עדכנתי קצת את עמוד הבית שיראה יותר טוב */}
-              <Route path="/" element={
-                <div className="page">
-                  <h2>{t.welcome}</h2>
-                  <p>{t.subWelcome}</p>
-                </div>
-              } />
-              <Route path="/news" element={<CommunityNews t={t} user={session.user} />} />
-              <Route path="/squad" element={<SquadBuilder t={t} />} />
-              <Route path="/predictions" element={<Predictions t={t} user={session.user} />} />
-            </Routes>
-          )}
+          <Routes>
+            <Route path="/" element={<div className="page"><h2>{t.welcome}</h2><p>{t.subWelcome}</p></div>} />
+            <Route path="/news" element={<CommunityNews t={t} user={session?.user} />} />
+            <Route path="/squad" element={<SquadBuilder t={t} />} />
+            <Route path="/predictions" element={<Predictions t={t} user={session?.user} />} />
+            {/* עמוד התחברות ייעודי */}
+            <Route path="/login" element={<AuthScreen t={t} />} />
+          </Routes>
         </main>
       </div>
     </Router>
@@ -263,17 +252,25 @@ const CommunityNews = ({ t, user }) => {
     <div className="page">
       <h2>{t.news} 📰</h2>
       
-      {/* אזור כתיבת הכתבה מציג מי אתה */}
-      <div className="compose-header">
-         <img src={userAvatar} alt="My Avatar" className="mini-avatar" />
-         <span>פרסם כ-<strong>{userName}</strong></span>
-      </div>
-
-      <form className="news-form" onSubmit={handleSubmit}>
-        <input type="text" placeholder={t.articleTitle} value={newArticle.title} onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} required />
-        <textarea placeholder={t.writeHere} value={newArticle.content} onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} required rows="4" />
-        <button type="submit" className="action-btn">{t.postArticle}</button>
-      </form>
+      {/* חסימה חכמה: רק מי שמחובר יכול לראות את טופס הכתיבה */}
+      {user ? (
+        <>
+          <div className="compose-header">
+             <img src={userAvatar} alt="My Avatar" className="mini-avatar" />
+             <span>פרסם כ-<strong>{userName}</strong></span>
+          </div>
+          <form className="news-form" onSubmit={handleSubmit}>
+            <input type="text" placeholder={t.articleTitle} value={newArticle.title} onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} required />
+            <textarea placeholder={t.writeHere} value={newArticle.content} onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} required rows="4" />
+            <button type="submit" className="action-btn">{t.postArticle}</button>
+          </form>
+        </>
+      ) : (
+        <div className="login-prompt">
+          <p>רוצה לפרסם כתבה משלך?</p>
+          <Link to="/login" className="action-btn">התחבר כדי לכתוב</Link>
+        </div>
+      )}
       
       <div className="articles-feed">
         {articles.map(a => {
