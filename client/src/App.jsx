@@ -331,7 +331,8 @@ const CommunityNews = ({ t, user }) => {
   );
 };
 
-const SquadBuilder = ({ t }) => {
+// --- Squad Builder Component ---
+const SquadBuilder = ({ t, user }) => {
   const [lineup, setLineup] = useState({ GK: null, DF1: null, DF2: null, DF3: null, DF4: null, MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null });
   
   const addToLineup = (player) => {
@@ -355,139 +356,102 @@ const SquadBuilder = ({ t }) => {
   };
 
   const saveLineup = async () => {
+    if (!user) return alert("You must be logged in!");
     await supabase.from('lineups').insert([{ formation_data: lineup }]);
     alert("Saved!");
   };
 
   return (
     <div className="page">
-      <h2>{t.squad}</h2>
+      <h2>{t.squad} ⚽</h2>
       <div className="builder-container">
         <div className="pitch full-pitch">
           <div className="attack-row">
-            <div className="position">{lineup.FW1 ? <img src={lineup.FW1.img} /> : "LW"}</div>
-            <div className="position">{lineup.FW2 ? <img src={lineup.FW2.img} /> : "ST"}</div>
-            <div className="position">{lineup.FW3 ? <img src={lineup.FW3.img} /> : "RW"}</div>
+            <div className="position">{lineup.FW1 ? <img src={lineup.FW1.img} alt="FW" /> : "LW"}</div>
+            <div className="position">{lineup.FW2 ? <img src={lineup.FW2.img} alt="FW" /> : "ST"}</div>
+            <div className="position">{lineup.FW3 ? <img src={lineup.FW3.img} alt="FW" /> : "RW"}</div>
           </div>
           <div className="midfield-row">
-            <div className="position">{lineup.MF1 ? <img src={lineup.MF1.img} /> : "CM"}</div>
-            <div className="position">{lineup.MF2 ? <img src={lineup.MF2.img} /> : "CDM"}</div>
-            <div className="position">{lineup.MF3 ? <img src={lineup.MF3.img} /> : "CM"}</div>
+            <div className="position">{lineup.MF1 ? <img src={lineup.MF1.img} alt="MF" /> : "CM"}</div>
+            <div className="position">{lineup.MF2 ? <img src={lineup.MF2.img} alt="MF" /> : "CDM"}</div>
+            <div className="position">{lineup.MF3 ? <img src={lineup.MF3.img} alt="MF" /> : "CM"}</div>
           </div>
           <div className="defense-row">
-            <div className="position">{lineup.DF1 ? <img src={lineup.DF1.img} /> : "LB"}</div>
-            <div className="position">{lineup.DF2 ? <img src={lineup.DF2.img} /> : "CB"}</div>
-            <div className="position">{lineup.DF3 ? <img src={lineup.DF3.img} /> : "CB"}</div>
-            <div className="position">{lineup.DF4 ? <img src={lineup.DF4.img} /> : "RB"}</div>
+            <div className="position">{lineup.DF1 ? <img src={lineup.DF1.img} alt="DF" /> : "LB"}</div>
+            <div className="position">{lineup.DF2 ? <img src={lineup.DF2.img} alt="DF" /> : "CB"}</div>
+            <div className="position">{lineup.DF3 ? <img src={lineup.DF3.img} alt="DF" /> : "CB"}</div>
+            <div className="position">{lineup.DF4 ? <img src={lineup.DF4.img} alt="DF" /> : "RB"}</div>
           </div>
-          <div className="goalie-row">
-            <div className="position">{lineup.GK ? <img src={lineup.GK.img} /> : "GK"}</div>
-          </div>
+          <div className="goalie-row"><div className="position">{lineup.GK ? <img src={lineup.GK.img} alt="GK" /> : "GK"}</div></div>
         </div>
         <div className="player-list extended-list">
           <div className="players-grid">
-            {playersData.map(p => (
-              <div key={p.id} className="player-card" onClick={() => addToLineup(p)}>
-                <img src={p.img} alt={p.name} />
-                <p>{p.name}</p>
-              </div>
-            ))}
+            {playersData.map(p => (<div key={p.id} className="player-card" onClick={() => addToLineup(p)}><img src={p.img} alt={p.name} /><p>{p.name}</p></div>))}
           </div>
         </div>
       </div>
-      <button className="action-btn" onClick={saveLineup}>{t.saveLineup}</button>
+      
+      {/* Smart Gating */}
+      {user ? (
+        <button className="action-btn" onClick={saveLineup}>{t.saveLineup}</button>
+      ) : (
+        <div className="login-prompt">
+          <p>רוצה לשמור את ההרכב שלך ולשתף עם כולם?</p>
+          <Link to="/login" className="action-btn">התחבר כדי לשמור</Link>
+        </div>
+      )}
     </div>
   );
 };
-const Predictions = ({ t }) => {
-  const [prediction, setPrediction] = useState({ username: '', home: '', away: '', scorer: '' });
-  const [recentPredictions, setRecentPredictions] = useState([]);
 
-  // Load predictions when page opens
-  useEffect(() => {
-    fetchPredictions();
-  }, []);
+// --- Predictions Component ---
+const Predictions = ({ t, user }) => {
+  const [prediction, setPrediction] = useState({ home: '', away: '', scorer: '' });
 
-  const fetchPredictions = async () => {
-    const { data, error } = await supabase
-      .from('predictions')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(9); // Show last 9 guesses
-    
-    if (!error) setRecentPredictions(data);
-  };
+  // Safe extraction of user data (if logged in)
+  const metadata = user?.user_metadata || {};
+  const pseudoName = user?.email ? user.email.split('@')[0] : 'Fan';
+  const userName = metadata.full_name || pseudoName;
 
   const handleSubmit = async () => {
-    if (!prediction.username || prediction.home === '' || prediction.away === '' || !prediction.scorer) {
-      return alert("Please fill all fields!");
-    }
-
-    const { error } = await supabase.from('predictions').insert([{
-      username: prediction.username,
-      home_score: prediction.home,
-      away_score: prediction.away,
-      scorer: prediction.scorer
+    if (!user) return;
+    await supabase.from('predictions').insert([{ 
+      username: userName, 
+      home_score: prediction.home, 
+      away_score: prediction.away, 
+      scorer: prediction.scorer 
     }]);
-
-    if (error) {
-      alert("Error saving prediction.");
-      console.error(error);
-    } else {
-      alert("Prediction saved! Good luck! 🤞");
-      setPrediction({ username: '', home: '', away: '', scorer: '' }); // Clear form
-      fetchPredictions(); // Refresh the board
-    }
+    alert("Saved!");
   };
 
   return (
-    <div className="page predictions-page">
+    <div className="page">
       <h2>{t.predictions} 🔮</h2>
       
-      <div className="news-form prediction-form">
-        <input 
-          type="text" placeholder={t.yourName} value={prediction.username}
-          onChange={(e) => setPrediction({...prediction, username: e.target.value})} 
-        />
-        
-        <div className="prediction-board">
-          <div className="team-pred">
-            <h3>R. Madrid</h3>
-            <input type="number" min="0" placeholder="0" value={prediction.home}
-                   onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
+      {user ? (
+        <div className="news-form prediction-form">
+          <div className="compose-header">
+             <span>שולח תחזית כ-<strong>{userName}</strong></span>
           </div>
-          <div className="vs-text">VS</div>
-          <div className="team-pred">
-            <h3>Opponent</h3>
-            <input type="number" min="0" placeholder="0" value={prediction.away}
-                   onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
+          <div className="prediction-board">
+            <div className="team-pred">
+               <h3>R. Madrid</h3>
+               <input type="number" placeholder="0" onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
+            </div>
+            <div className="vs-text">VS</div>
+            <div className="team-pred">
+               <h3>Opponent</h3>
+               <input type="number" placeholder="0" onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
+            </div>
           </div>
+          <button className="action-btn" onClick={handleSubmit}>{t.submitPred}</button>
         </div>
-
-        <div className="scorer-select">
-          <h3>First Goalscorer?</h3>
-          <select value={prediction.scorer} onChange={(e) => setPrediction({...prediction, scorer: e.target.value})}>
-            <option value="">Select a player...</option>
-            {playersData.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-          </select>
+      ) : (
+         <div className="login-prompt">
+          <p>מי לדעתך ינצח במשחק הבא?</p>
+          <Link to="/login" className="action-btn">התחבר כדי לשלוח תחזית</Link>
         </div>
-
-        <button className="action-btn" onClick={handleSubmit}>{t.submitPred}</button>
-      </div>
-
-      {/* Board of recent predictions from the community */}
-      <div className="recent-predictions">
-        <h3>Community Guesses 🏆</h3>
-        <div className="predictions-grid">
-           {recentPredictions.map(p => (
-             <div key={p.id} className="prediction-card">
-               <strong>{p.username}</strong> predicted:
-               <div className="score-display">RMA {p.home_score} - {p.away_score} OPP</div>
-               <small>First Scorer: {p.scorer}</small>
-             </div>
-           ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };
