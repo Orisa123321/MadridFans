@@ -369,3 +369,67 @@ html, body {
   background: var(--bg-color);
   padding: 0 10px;
 }
+
+/* --- Avatars and Profile Images --- */
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.author-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent-color);
+}
+
+.comment-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--card-bg);
+  padding: 10px 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.comment-avatar {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comment-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-content strong {
+  font-size: 0.85rem;
+  color: #38bdf8;
+  margin-bottom: 3px;
+}
+
+.comment-content span {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+.mini-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.compose-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  color: white;
+}
