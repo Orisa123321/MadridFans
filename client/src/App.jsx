@@ -161,11 +161,13 @@ const CommunityNews = ({ t, user }) => {
   const [showComments, setShowComments] = useState({});
   const [commentInputs, setCommentInputs] = useState({}); 
 
-  // --- NEW: Extracting Google Data ---
+// --- NEW: Extracting Google Data Safely ---
   const metadata = user?.user_metadata || {};
-  // אם יש התחברות גוגל - קח את השם משם. אם לא - קח את האימייל.
-  const userName = metadata.full_name || user.email.split('@')[0];
-  // אם יש התחברות גוגל - קח את התמונה. אם לא - צור תמונה עם אות ראשונה.
+  
+  // Safe extraction: Only try to split email if user and user.email exist
+  const pseudoName = user?.email ? user.email.split('@')[0] : 'Fan';
+  
+  const userName = metadata.full_name || pseudoName;
   const userAvatar = metadata.avatar_url || `https://ui-avatars.com/api/?name=${userName}&background=38bdf8&color=0f172a&bold=true`;
 
   const [likedArticles, setLikedArticles] = useState(() => {
