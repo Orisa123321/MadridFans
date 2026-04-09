@@ -75,7 +75,7 @@ function App() {
       {/* Dynamic direction based on language */}
       <div className="app-container" dir={lang === 'he' ? 'rtl' : 'ltr'}>
         <nav className="navbar">
-          <h1 className="logo">MadridFans</h1>
+          <h1 className="logo">Real Madrid Galacticos</h1>
           <div className="nav-links">
             <Link to="/">{t.home}</Link>
             <Link to="/news">{t.news}</Link>
@@ -170,8 +170,8 @@ const CommunityNews = ({ t }) => {
   };
 
   const shareToTelegram = (title) => {
-    const url = encodeURIComponent("https://madrid-fans.vercel.app/news");
-    const text = encodeURIComponent(`קראתי עכשיו את הכתבה "${title}" באפליקציית MadridFans! כנסו לקרוא 👑⚽`);
+    const url = encodeURIComponent("https://realmadridgalacticos.vercel.app/news");
+    const text = encodeURIComponent(`קראתי עכשיו את הכתבה "${title}" באפליקציית Real Madrid Galacticos! כנסו לקרוא 👑⚽`);
     window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
   };
 
