@@ -120,34 +120,61 @@ const AuthScreen = ({ t }) => {
   );
 };
 
+// --- Main App ---
 function App() {
-  const [lang, setLang] = useState('he'); // Default is Hebrew
+  const [lang, setLang] = useState('he');
+  const [session, setSession] = useState(null);
   const t = translations[lang];
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   return (
     <Router>
-      {/* Dynamic direction based on language */}
       <div className="app-container" dir={lang === 'he' ? 'rtl' : 'ltr'}>
         <nav className="navbar">
           <h1 className="logo">Real Madrid Galacticos</h1>
           <div className="nav-links">
-            <Link to="/">{t.home}</Link>
-            <Link to="/news">{t.news}</Link>
-            <Link to="/squad">{t.squad}</Link>
-            <Link to="/predictions">{t.predictions}</Link>
-            <button className="lang-toggle" onClick={() => setLang(lang === 'he' ? 'en' : 'he')}>
-              {t.langBtn}
-            </button>
+            <button className="lang-toggle" onClick={() => setLang(lang === 'he' ? 'en' : 'he')}>{t.langBtn}</button>
+            {session && (
+              <>
+                <Link to="/">{t.home}</Link>
+                <Link to="/news">{t.news}</Link>
+                <Link to="/squad">{t.squad}</Link>
+                <Link to="/predictions">{t.predictions}</Link>
+                {/* הנה הכפתור שחזר! */}
+                <button className="logout-btn" onClick={handleLogout}>{t.logout}</button>
+              </>
+            )}
           </div>
         </nav>
 
         <main className="main-content">
-          <Routes>
-            <Route path="/" element={<div className="page"><h2>{t.welcome}</h2><p>{t.subWelcome}</p></div>} />
-            <Route path="/news" element={<CommunityNews t={t} />} />
-            <Route path="/squad" element={<SquadBuilder t={t} />} />
-            <Route path="/predictions" element={<Predictions t={t} />} />
-          </Routes>
+          {!session ? (
+            <AuthScreen t={t} />
+          ) : (
+            <Routes>
+              {/* עדכנתי קצת את עמוד הבית שיראה יותר טוב */}
+              <Route path="/" element={
+                <div className="page">
+                  <h2>{t.welcome}</h2>
+                  <p>{t.subWelcome}</p>
+                </div>
+              } />
+              <Route path="/news" element={<CommunityNews t={t} user={session.user} />} />
+              <Route path="/squad" element={<SquadBuilder t={t} />} />
+              <Route path="/predictions" element={<Predictions t={t} user={session.user} />} />
+            </Routes>
+          )}
         </main>
       </div>
     </Router>
