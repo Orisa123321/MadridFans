@@ -29,7 +29,6 @@ html, body {
 }
 
 .logo { margin: 0; color: var(--accent-color); font-size: 1.8rem; font-weight: 800; }
-.nav-links { display: flex; gap: 1.5rem; }
 .nav-links a {
   color: var(--text-color); text-decoration: none; font-weight: 600;
   padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.2s;
@@ -231,17 +230,6 @@ html, body {
 }
 .prediction-card small { color: #94a3b8; font-weight: bold;}
 
-.lang-toggle {
-  background: transparent;
-  border: 1px solid var(--accent-color);
-  color: var(--accent-color);
-  padding: 5px 12px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s;
-  margin-right: 15px;
-}
 
 .lang-toggle:hover {
   background: var(--accent-color);
@@ -256,9 +244,45 @@ html, body {
   text-align: left;
 }
 
-/* Fix navbar layout for RTL */
+/* --- Navbar Layout Fixes --- */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Adds consistent spacing between all items */
+}
+
 [dir="rtl"] .nav-links {
-  flex-direction: row;
+  flex-direction: row; /* Keeps items in a row in Hebrew */
+}
+
+/* Style the Logout button specifically */
+.logout-btn {
+  background: #ef4444; /* Red color */
+  border: none;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: #dc2626; /* Darker red on hover */
+  transform: scale(1.05);
+}
+
+/* Ensure the language toggle looks consistent */
+.lang-toggle {
+  background: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 0; /* Remove old margins as 'gap' handles it now */
 }
 
 /* --- Article Actions & Buttons --- */
