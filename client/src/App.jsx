@@ -154,24 +154,26 @@ function App() {
   );
 }
 
-const CommunityNews = ({ t }) => {
+const CommunityNews = ({ t, user }) => {
   const [articles, setArticles] = useState([]);
   const [comments, setComments] = useState([]);
-  const [newArticle, setNewArticle] = useState({ title: '', author: '', content: '' });
-  
+  const [newArticle, setNewArticle] = useState({ title: '', content: '' });
   const [showComments, setShowComments] = useState({});
   const [commentInputs, setCommentInputs] = useState({}); 
 
-  // NEW: State to remember liked articles in this browser
+  // --- NEW: Extracting Google Data ---
+  const metadata = user?.user_metadata || {};
+  // אם יש התחברות גוגל - קח את השם משם. אם לא - קח את האימייל.
+  const userName = metadata.full_name || user.email.split('@')[0];
+  // אם יש התחברות גוגל - קח את התמונה. אם לא - צור תמונה עם אות ראשונה.
+  const userAvatar = metadata.avatar_url || `https://ui-avatars.com/api/?name=${userName}&background=38bdf8&color=0f172a&bold=true`;
+
   const [likedArticles, setLikedArticles] = useState(() => {
     const saved = localStorage.getItem('madridFansLikes');
     return saved ? JSON.parse(saved) : [];
   });
 
-  useEffect(() => { 
-    fetchArticles(); 
-    fetchComments();
-  }, []);
+  useEffect(() => { fetchArticles(); fetchComments(); }, []);
 
   const fetchArticles = async () => {
     const { data } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
@@ -185,21 +187,19 @@ const CommunityNews = ({ t }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.from('articles').insert([newArticle]);
-    if (!error) { 
-      setNewArticle({ title: '', author: '', content: '' }); 
-      fetchArticles(); 
-    }
+    const { error } = await supabase.from('articles').insert([{ 
+      title: newArticle.title, 
+      content: newArticle.content, 
+      author: userName, // השם האמיתי מגוגל
+      avatar_url: userAvatar // התמונה מגוגל
+    }]);
+    if (!error) { setNewArticle({ title: '', content: '' }); fetchArticles(); }
   };
 
-  // UPDATED: Like function with browser memory check
   const handleLike = async (id, currentLikes) => {
-    // Stop if already liked
     if (likedArticles.includes(id)) return;
-
     const { error } = await supabase.from('articles').update({ likes: currentLikes + 1 }).eq('id', id);
     if (!error) {
-      // Save to browser memory
       const updatedLikes = [...likedArticles, id];
       setLikedArticles(updatedLikes);
       localStorage.setItem('madridFansLikes', JSON.stringify(updatedLikes));
@@ -209,32 +209,39 @@ const CommunityNews = ({ t }) => {
 
   const handleCommentSubmit = async (articleId) => {
     const input = commentInputs[articleId];
-    if (!input || !input.author || !input.content) return;
+    if (!input || !input.content) return;
     
     const { error } = await supabase.from('comments').insert([{ 
       article_id: articleId, 
-      author: input.author, 
-      content: input.content 
+      author: userName, // השם האמיתי מגוגל
+      content: input.content,
+      avatar_url: userAvatar // התמונה מגוגל
     }]);
 
     if (!error) {
-      setCommentInputs({ ...commentInputs, [articleId]: { author: '', content: '' } });
+      setCommentInputs({ ...commentInputs, [articleId]: { content: '' } });
       fetchComments();
     }
   };
 
   const shareToTelegram = (title) => {
     const url = encodeURIComponent("https://realmadridgalacticos.vercel.app/news");
-    const text = encodeURIComponent(`קראתי עכשיו את הכתבה "${title}" באפליקציית Real Madrid Galacticos! כנסו לקרוא 👑⚽`);
+    const text = encodeURIComponent(`קראתי עכשיו את הכתבה "${title}" באפליקציית ריאל מדריד גלאקטיקוס! כנסו לקרוא 👑⚽`);
     window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
   };
 
   return (
     <div className="page">
       <h2>{t.news} 📰</h2>
+      
+      {/* אזור כתיבת הכתבה מציג מי אתה */}
+      <div className="compose-header">
+         <img src={userAvatar} alt="My Avatar" className="mini-avatar" />
+         <span>פרסם כ-<strong>{userName}</strong></span>
+      </div>
+
       <form className="news-form" onSubmit={handleSubmit}>
         <input type="text" placeholder={t.articleTitle} value={newArticle.title} onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} required />
-        <input type="text" placeholder={t.yourName} value={newArticle.author} onChange={(e) => setNewArticle({...newArticle, author: e.target.value})} required />
         <textarea placeholder={t.writeHere} value={newArticle.content} onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} required rows="4" />
         <button type="submit" className="action-btn">{t.postArticle}</button>
       </form>
@@ -242,21 +249,24 @@ const CommunityNews = ({ t }) => {
       <div className="articles-feed">
         {articles.map(a => {
           const articleComments = comments.filter(c => c.article_id === a.id);
-          const hasLiked = likedArticles.includes(a.id); // Check if liked
-          
+          const hasLiked = likedArticles.includes(a.id);
+          // תמונת ברירת מחדל לכתבות ישנות שאין להן תמונה
+          const displayAvatar = a.avatar_url || `https://ui-avatars.com/api/?name=${a.author}&background=f8fafc&color=0f172a`;
+
           return (
             <div key={a.id} className="article-card">
               <h3>{a.title}</h3>
-              <small>{a.author} • {new Date(a.created_at).toLocaleDateString()}</small>
+              
+              {/* NEW: Author info with picture */}
+              <div className="author-info">
+                <img src={displayAvatar} alt="Author" className="author-avatar" />
+                <small>{a.author} • {new Date(a.created_at).toLocaleDateString()}</small>
+              </div>
+
               <p>{a.content}</p>
               
               <div className="article-actions">
-                {/* UPDATED: Like button UI changes if already liked */}
-                <button 
-                  className="action-icon-btn like-btn" 
-                  onClick={() => handleLike(a.id, a.likes || 0)}
-                  style={{ opacity: hasLiked ? 0.5 : 1, cursor: hasLiked ? 'not-allowed' : 'pointer' }}
-                >
+                <button className="action-icon-btn like-btn" onClick={() => handleLike(a.id, a.likes || 0)} style={{ opacity: hasLiked ? 0.5 : 1, cursor: hasLiked ? 'not-allowed' : 'pointer' }}>
                   {hasLiked ? '🤍' : '❤️'} {a.likes || 0} {t.like}
                 </button>
                 <button className="action-icon-btn comment-btn" onClick={() => setShowComments({...showComments, [a.id]: !showComments[a.id]})}>
@@ -272,28 +282,21 @@ const CommunityNews = ({ t }) => {
                   <div className="comments-list">
                     {articleComments.map(c => (
                       <div key={c.id} className="comment-bubble">
-                        <strong>{c.author}:</strong> {c.content}
+                        <img src={c.avatar_url || `https://ui-avatars.com/api/?name=${c.author}&background=f8fafc&color=0f172a`} alt="Commenter" className="comment-avatar" />
+                        <div className="comment-content">
+                           <strong>{c.author}</strong> 
+                           <span>{c.content}</span>
+                        </div>
                       </div>
                     ))}
-                    {articleComments.length === 0 && <span className="no-comments">אין עדיין תגובות. תהיו הראשונים!</span>}
                   </div>
-                  
                   <div className="add-comment-box">
-                    <input 
-                      type="text" placeholder={t.yourName} 
-                      value={commentInputs[a.id]?.author || ''}
-                      onChange={(e) => setCommentInputs({...commentInputs, [a.id]: {...commentInputs[a.id], author: e.target.value}})}
-                    />
-                    <input 
-                      type="text" placeholder={t.writeComment} 
-                      value={commentInputs[a.id]?.content || ''}
-                      onChange={(e) => setCommentInputs({...commentInputs, [a.id]: {...commentInputs[a.id], content: e.target.value}})}
-                    />
+                    <img src={userAvatar} alt="Me" className="mini-avatar" />
+                    <input type="text" placeholder={t.writeComment} value={commentInputs[a.id]?.content || ''} onChange={(e) => setCommentInputs({...commentInputs, [a.id]: {content: e.target.value}})} />
                     <button onClick={() => handleCommentSubmit(a.id)}>{t.send}</button>
                   </div>
                 </div>
               )}
-
             </div>
           );
         })}
@@ -301,7 +304,6 @@ const CommunityNews = ({ t }) => {
     </div>
   );
 };
-
 
 const SquadBuilder = ({ t }) => {
   const [lineup, setLineup] = useState({ GK: null, DF1: null, DF2: null, DF3: null, DF4: null, MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null });
