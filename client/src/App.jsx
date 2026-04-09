@@ -23,6 +23,7 @@ const translations = {
     comments: "תגובות",
     writeComment: "כתוב תגובה...",
     send: "שלח",
+    googleLogin: "התחברות מהירה עם גוגל",
     share: "שתף בטלגרם"
   },
   en: {
@@ -43,6 +44,7 @@ const translations = {
     comments: "Comments",
     writeComment: "Write a comment...",
     send: "Send",
+    googleLogin: "Login with Google",
     share: "Share on Telegram"
   }
 };
@@ -65,6 +67,58 @@ const playersData = [
   { id: 21, name: "Brahim", pos: "FW", number: 21, img: "https://ui-avatars.com/api/?name=Brahim+Diaz&background=f8fafc&color=0f172a&bold=true" },
   { id: 16, name: "Endrick", pos: "FW", number: 16, img: "https://ui-avatars.com/api/?name=Endrick&background=f8fafc&color=0f172a&bold=true" }
 ];
+
+// --- Authentication Component ---
+const AuthScreen = ({ t }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    if (isLogin) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) alert(error.message);
+    } else {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) alert(error.message);
+    }
+  };
+
+  // הפונקציה החדשה להתחברות עם גוגל
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: 'https://realmadridgalacticos.vercel.app/'
+      }
+    });
+    if (error) alert(error.message);
+  };
+
+  return (
+    <div className="page auth-page">
+      <h2>{isLogin ? t.login : t.signup} 🛡️</h2>
+      
+      {/* כפתור גוגל החדש */}
+      <button type="button" className="action-btn google-btn" onClick={handleGoogleLogin}>
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="google-icon" />
+        {t.googleLogin || "התחבר עם Google"}
+      </button>
+
+      <div className="divider"><span>או עם אימייל</span></div>
+
+      <form className="news-form" onSubmit={handleAuth}>
+        <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input type="password" placeholder={t.password} value={password} onChange={(e) => setPassword(e.target.value)} required minLength="6" />
+        <button type="submit" className="action-btn">{isLogin ? t.login : t.signup}</button>
+      </form>
+      <p className="auth-toggle" onClick={() => setIsLogin(!isLogin)}>
+        {isLogin ? t.noAccount : t.hasAccount}
+      </p>
+    </div>
+  );
+};
 
 function App() {
   const [lang, setLang] = useState('he'); // Default is Hebrew
