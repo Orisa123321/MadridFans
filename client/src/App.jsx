@@ -10,44 +10,64 @@ const translations = {
     news: "כתבות",
     squad: "ההרכב שלי",
     predictions: "תחזיות",
-    welcome: "Welcome to Real Madrid Galacticos ",
+    welcome: "ברוכים הבאים ל-MadridFans 👑",
     subWelcome: "הבית של אוהדי ריאל מדריד בישראל.",
     postArticle: "פרסם כתבה",
-    yourName: "השם שלך",
     articleTitle: "כותרת הכתבה",
     writeHere: "כתוב כאן...",
-    saveLineup: "שמור הרכב למסד הנתונים",
+    saveLineup: "שמור הרכב",
     submitPred: "שלח תחזית",
     langBtn: "English",
     like: "אהבתי",
     comments: "תגובות",
     writeComment: "כתוב תגובה...",
     send: "שלח",
-    googleLogin: "התחברות מהירה עם גוגל",
-    share: "שתף בטלגרם"
+    share: "שתף בטלגרם",
+    login: "התחברות",
+    signup: "הרשמה",
+    email: "אימייל",
+    password: "סיסמה",
+    logout: "התנתק",
+    noAccount: "אין לך חשבון? הירשם כאן",
+    hasAccount: "יש לך חשבון? התחבר",
+    profile: "הפרופיל שלי",
+    myArticles: "הכתבות שלי",
+    deleteBtn: "מחק 🗑️",
+    noData: "עדיין לא פרסמת כלום."
   },
   en: {
     home: "Home",
     news: "News",
     squad: "Squad",
     predictions: "Predictions",
-    welcome: "Welcome to Real Madrid Galacticos ",
+    welcome: "Welcome to MadridFans 👑",
     subWelcome: "The ultimate hub for Real Madrid fans.",
     postArticle: "Post Article",
-    yourName: "Your Name",
     articleTitle: "Article Title",
     writeHere: "Write your article here...",
-    saveLineup: "Save Lineup to Database",
+    saveLineup: "Save Lineup",
     submitPred: "Submit Prediction",
     langBtn: "עברית",
     like: "Like",
     comments: "Comments",
     writeComment: "Write a comment...",
     send: "Send",
-    googleLogin: "Login with Google",
-    share: "Share on Telegram"
+    share: "Share on Telegram",
+    login: "Login",
+    signup: "Sign Up",
+    email: "Email",
+    password: "Password",
+    logout: "Logout",
+    noAccount: "Don't have an account? Sign up",
+    hasAccount: "Already have an account? Login",
+    profile: "My Profile",
+    myArticles: "My Articles",
+    deleteBtn: "Delete 🗑️",
+    noData: "You haven't posted anything yet."
   }
 };
+
+
 const playersData = [
   { id: 1, name: "Courtois", pos: "GK", number: 1, img: "https://ui-avatars.com/api/?name=Thibaut+Courtois&background=f8fafc&color=0f172a&bold=true" },
   { id: 13, name: "Lunin", pos: "GK", number: 13, img: "https://ui-avatars.com/api/?name=Andriy+Lunin&background=f8fafc&color=0f172a&bold=true" },
@@ -116,6 +136,81 @@ const AuthScreen = ({ t }) => {
   );
 };
 
+// --- Profile Component ---
+const Profile = ({ t, user }) => {
+  const [myArticles, setMyArticles] = useState([]);
+
+  // שואבים את השם והתמונה בדיוק כמו שעשינו בכתבות
+  const metadata = user?.user_metadata || {};
+  const pseudoName = user?.email ? user.email.split('@')[0] : 'Fan';
+  const userName = metadata.full_name || pseudoName;
+  const userAvatar = metadata.avatar_url || `https://ui-avatars.com/api/?name=${userName}&background=38bdf8&color=0f172a&bold=true`;
+
+  useEffect(() => {
+    if (user) fetchMyData();
+  }, [user]);
+
+  const fetchMyData = async () => {
+    // שואבים רק כתבות שהמחבר שלהן הוא השם של המשתמש
+    const { data } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('author', userName)
+      .order('created_at', { ascending: false });
+    
+    if (data) setMyArticles(data);
+  };
+
+  const handleDelete = async (articleId) => {
+    if (!window.confirm("האם אתה בטוח שברצונך למחוק את הכתבה?")) return;
+    
+    // מחיקה ממסד הנתונים
+    const { error } = await supabase.from('articles').delete().eq('id', articleId);
+    
+    if (!error) {
+      // רענון הרשימה אחרי מחיקה
+      fetchMyData();
+    } else {
+      alert("שגיאה במחיקה.");
+    }
+  };
+
+  if (!user) return <div className="page"><h2>אנא התחבר כדי לראות את הפרופיל שלך.</h2></div>;
+
+  return (
+    <div className="page profile-page">
+      <div className="profile-header">
+        <img src={userAvatar} alt="Profile" className="profile-main-avatar" />
+        <h2>{userName}</h2>
+      </div>
+
+      <div className="profile-section">
+        <h3>{t.myArticles} 📰</h3>
+        {myArticles.length === 0 ? (
+          <p className="no-data-msg">{t.noData}</p>
+        ) : (
+          <div className="articles-feed">
+            {myArticles.map(a => (
+              <div key={a.id} className="article-card my-article-card">
+                <div className="article-content-wrapper">
+                  <h4>{a.title}</h4>
+                  <small>{new Date(a.created_at).toLocaleDateString()}</small>
+                  <p>{a.content}</p>
+                  <span className="likes-count">❤️ {a.likes || 0}</span>
+                </div>
+                {/* כפתור המחיקה */}
+                <button className="delete-btn" onClick={() => handleDelete(a.id)}>
+                  {t.deleteBtn}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // --- Main App ---
 function App() {
   const [lang, setLang] = useState('he');
@@ -145,6 +240,15 @@ function App() {
             <Link to="/news">{t.news}</Link>
             <Link to="/squad">{t.squad}</Link>
             <Link to="/predictions">{t.predictions}</Link>
+
+            <Link to="/predictions">{t.predictions}</Link>
+            
+            {session ? (
+              <>
+                <Link to="/profile" className="profile-nav-link">{t.profile}</Link>
+                <button className="logout-btn" onClick={handleLogout}>{t.logout}</button>
+              </>
+            ) : (
             
             {/* אם מחובר - התנתק. אם אורח - כפתור התחברות */}
             {session ? (
@@ -161,6 +265,7 @@ function App() {
             <Route path="/news" element={<CommunityNews t={t} user={session?.user} />} />
             <Route path="/squad" element={<SquadBuilder t={t} />} />
             <Route path="/predictions" element={<Predictions t={t} user={session?.user} />} />
+            <Route path="/profile" element={<Profile t={t} user={session?.user} />} />
             {/* עמוד התחברות ייעודי */}
             <Route path="/login" element={<AuthScreen t={t} />} />
           </Routes>
