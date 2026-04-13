@@ -1,3 +1,5 @@
+> **Disclaimer:** This application was built as a personal portfolio project and educational exercise. It is not affiliated with, endorsed by, or connected to Real Madrid C.F. It is not an active commercial fan community.
+
 # 👑 Real Madrid Galacticos
 
 **The ultimate hub for Real Madrid fans in Israel.** A fully functional, bilingual web application built with React and Supabase.
