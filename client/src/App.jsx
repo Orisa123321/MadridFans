@@ -1,216 +1,240 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { supabase } from './supabaseClient';
+import { Routes, Route, Link } from 'react-router-dom';
+import { supabase } from './supabaseClient'; // מייבאים מהקובץ שלך!
 import './App.css';
 
-// --- Translations Object ---
+// --- Admin Config ---
+const ADMIN_EMAIL = "ori.shar10@gmail.com"; 
+
+// --- Translations ---
 const translations = {
   he: {
-    home: "ראשי",
-    news: "כתבות",
-    squad: "ההרכב שלי",
-    predictions: "תחזיות",
-    welcome: "ברוכים הבאים ל-MadridFans 👑",
-    subWelcome: "הבית של אוהדי ריאל מדריד בישראל.",
-    postArticle: "פרסם כתבה",
-    articleTitle: "כותרת הכתבה",
-    writeHere: "כתוב כאן...",
-    saveLineup: "שמור הרכב",
-    submitPred: "שלח תחזית",
-    langBtn: "English",
-    like: "אהבתי",
-    comments: "תגובות",
-    writeComment: "כתוב תגובה...",
-    send: "שלח",
-    share: "שתף בטלגרם",
+    welcome: "ברוכים הבאים ל-MadridFans",
+    subWelcome: "קהילת האוהדים הגדולה של ריאל מדריד בישראל",
     login: "התחברות",
-    signup: "הרשמה",
-    email: "אימייל",
-    password: "סיסמה",
-    logout: "התנתק",
-    noAccount: "אין לך חשבון? הירשם כאן",
-    hasAccount: "יש לך חשבון? התחבר",
-    profile: "הפרופיל שלי",
-    myArticles: "הכתבות שלי",
-    deleteBtn: "מחק 🗑️",
-    noData: "עדיין לא פרסמת כלום."
+    logout: "התנתקות",
+    profile: "פרופיל",
+    news: "קהילה וחדשות",
+    predictions: "תחזיות",
+    leagueTable: "טבלת הליגה",
+    latestNews: "חדשות חמות",
+    readMore: "קרא עוד",
+    rank0: "שחקן אקדמיה 🌱",
+    rank1: "שחקן הרכב ⚽",
+    rank2: "גלאקטיקו ⭐️",
+    rank3: "אגדת מועדון 👑",
+    adminPanel: "פאנל ניהול",
+    deleteBtn: "מחק",
+    team: "קבוצה",
+    played: "מש'",
+    points: "נק'",
+    liveChat: "צ'אט חי: חדר מלחמה 🏟️",
+    nextMatch: "המשחק הבא",
+    liveNow: "LIVE"
   },
   en: {
-    home: "Home",
-    news: "News",
-    squad: "Squad",
-    predictions: "Predictions",
-    welcome: "Welcome to MadridFans 👑",
-    subWelcome: "The ultimate hub for Real Madrid fans.",
-    postArticle: "Post Article",
-    articleTitle: "Article Title",
-    writeHere: "Write your article here...",
-    saveLineup: "Save Lineup",
-    submitPred: "Submit Prediction",
-    langBtn: "עברית",
-    like: "Like",
-    comments: "Comments",
-    writeComment: "Write a comment...",
-    send: "Send",
-    share: "Share on Telegram",
+    welcome: "Welcome to MadridFans",
+    subWelcome: "The ultimate hub for Madridistas",
     login: "Login",
-    signup: "Sign Up",
-    email: "Email",
-    password: "Password",
     logout: "Logout",
-    noAccount: "Don't have an account? Sign up",
-    hasAccount: "Already have an account? Login",
-    profile: "My Profile",
-    myArticles: "My Articles",
-    deleteBtn: "Delete 🗑️",
-    noData: "You haven't posted anything yet."
+    profile: "Profile",
+    news: "Community",
+    predictions: "Predictions",
+    leagueTable: "League Table",
+    latestNews: "Latest News",
+    readMore: "Read More",
+    rank0: "Academy Player 🌱",
+    rank1: "First Team ⚽",
+    rank2: "Galáctico ⭐️",
+    rank3: "Club Legend 👑",
+    adminPanel: "Admin Panel",
+    deleteBtn: "Delete",
+    team: "Team",
+    played: "P",
+    points: "Pts",
+    liveChat: "Matchday Live Chat 🏟️",
+    nextMatch: "Next Match",
+    liveNow: "LIVE"
   }
 };
 
-const playersData = [
-  { id: 1, name: "Courtois", pos: "GK", number: 1, img: "https://ui-avatars.com/api/?name=Thibaut+Courtois&background=f8fafc&color=0f172a&bold=true" },
-  { id: 13, name: "Lunin", pos: "GK", number: 13, img: "https://ui-avatars.com/api/?name=Andriy+Lunin&background=f8fafc&color=0f172a&bold=true" },
-  { id: 2, name: "Carvajal", pos: "DF", number: 2, img: "https://ui-avatars.com/api/?name=Dani+Carvajal&background=f8fafc&color=0f172a&bold=true" },
-  { id: 3, name: "Militao", pos: "DF", number: 3, img: "https://ui-avatars.com/api/?name=Eder+Militao&background=f8fafc&color=0f172a&bold=true" },
-  { id: 4, name: "Alaba", pos: "DF", number: 4, img: "https://ui-avatars.com/api/?name=David+Alaba&background=f8fafc&color=0f172a&bold=true" },
-  { id: 22, name: "Rudiger", pos: "DF", number: 22, img: "https://ui-avatars.com/api/?name=Antonio+Rudiger&background=f8fafc&color=0f172a&bold=true" },
-  { id: 23, name: "Mendy", pos: "DF", number: 23, img: "https://ui-avatars.com/api/?name=Ferland+Mendy&background=f8fafc&color=0f172a&bold=true" },
-  { id: 8, name: "Valverde", pos: "MF", number: 8, img: "https://ui-avatars.com/api/?name=Fede+Valverde&background=f8fafc&color=0f172a&bold=true" },
-  { id: 14, name: "Tchouameni", pos: "MF", number: 14, img: "https://ui-avatars.com/api/?name=A+Tchouameni&background=f8fafc&color=0f172a&bold=true" },
-  { id: 12, name: "Camavinga", pos: "MF", number: 12, img: "https://ui-avatars.com/api/?name=E+Camavinga&background=f8fafc&color=0f172a&bold=true" },
-  { id: 5, name: "Bellingham", pos: "MF", number: 5, img: "https://ui-avatars.com/api/?name=Jude+Bellingham&background=f8fafc&color=0f172a&bold=true" },
-  { id: 10, name: "Modric", pos: "MF", number: 10, img: "https://ui-avatars.com/api/?name=Luka+Modric&background=f8fafc&color=0f172a&bold=true" },
-  { id: 7, name: "Vinicius", pos: "FW", number: 7, img: "https://ui-avatars.com/api/?name=Vinicius+Jr&background=f8fafc&color=0f172a&bold=true" },
-  { id: 9, name: "Mbappe", pos: "FW", number: 9, img: "https://ui-avatars.com/api/?name=Kylian+Mbappe&background=f8fafc&color=0f172a&bold=true" },
-  { id: 11, name: "Rodrygo", pos: "FW", number: 11, img: "https://ui-avatars.com/api/?name=Rodrygo+Goes&background=f8fafc&color=0f172a&bold=true" },
-  { id: 21, name: "Brahim", pos: "FW", number: 21, img: "https://ui-avatars.com/api/?name=Brahim+Diaz&background=f8fafc&color=0f172a&bold=true" },
-  { id: 16, name: "Endrick", pos: "FW", number: 16, img: "https://ui-avatars.com/api/?name=Endrick&background=f8fafc&color=0f172a&bold=true" }
-];
-
-// --- Authentication Component ---
-const AuthScreen = ({ t }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
-  const navigate = useNavigate(); // נווט אוטומטי
-
-  const handleAuth = async (e) => {
-    e.preventDefault();
-    const { error } = isLogin 
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password });
-      
-    if (error) alert(error.message);
-    else navigate('/'); // חזור לדף הבית אחרי התחברות
-  };
-
-  const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: 'https://realmadridgalacticos.vercel.app/' }
-    });
-    if (error) alert(error.message);
-  };
-
-  return (
-    <div className="page auth-page">
-      <h2>{isLogin ? t.login : t.signup} 🛡️</h2>
-      
-      <button type="button" className="action-btn google-btn" onClick={handleGoogleLogin}>
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="google-icon" />
-        {t.googleLogin || "התחבר עם Google"}
-      </button>
-
-      <div className="divider"><span>או עם אימייל</span></div>
-
-      <form className="news-form auth-form" onSubmit={handleAuth}>
-        <input type="email" placeholder={t.email || "אימייל"} value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder={t.password || "סיסמה"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength="6" />
-        <button type="submit" className="action-btn submit-auth-btn">{isLogin ? (t.login || "התחבר") : (t.signup || "הירשם")}</button>
-      </form>
-      <p className="auth-toggle" onClick={() => setIsLogin(!isLogin)}>
-        {isLogin ? (t.noAccount || "אין חשבון? הירשם") : (t.hasAccount || "יש חשבון? התחבר")}
-      </p>
-    </div>
-  );
-};
-
-// --- Profile Component ---
-const Profile = ({ t, user }) => {
-  const [myArticles, setMyArticles] = useState([]);
-
-  // שואבים את השם והתמונה בדיוק כמו שעשינו בכתבות
-  const metadata = user?.user_metadata || {};
-  const pseudoName = user?.email ? user.email.split('@')[0] : 'Fan';
-  const userName = metadata.full_name || pseudoName;
-  const userAvatar = metadata.avatar_url || `https://ui-avatars.com/api/?name=${userName}&background=38bdf8&color=0f172a&bold=true`;
+// --- Helper: Match Status Bar ---
+const MatchStatusBar = ({ t }) => {
+  const [match] = useState({ isLive: false, home: "Real Madrid", away: "Man City", date: new Date(Date.now() + 18000000) });
+  const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
-    if (user) fetchMyData();
-  }, [user]);
-
-  const fetchMyData = async () => {
-    // שואבים רק כתבות שהמחבר שלהן הוא השם של המשתמש
-    const { data } = await supabase
-      .from('articles')
-      .select('*')
-      .eq('author', userName)
-      .order('created_at', { ascending: false });
-    
-    if (data) setMyArticles(data);
-  };
-
-  const handleDelete = async (articleId) => {
-    if (!window.confirm("האם אתה בטוח שברצונך למחוק את הכתבה?")) return;
-    
-    // מחיקה ממסד הנתונים
-    const { error } = await supabase.from('articles').delete().eq('id', articleId);
-    
-    if (!error) {
-      // רענון הרשימה אחרי מחיקה
-      fetchMyData();
-    } else {
-      alert("שגיאה במחיקה.");
-    }
-  };
-
-  if (!user) return <div className="page"><h2>אנא התחבר כדי לראות את הפרופיל שלך.</h2></div>;
+    const timer = setInterval(() => {
+      const dist = match.date - new Date();
+      const h = Math.floor((dist % 86400000) / 3600000);
+      const m = Math.floor((dist % 3600000) / 60000);
+      const s = Math.floor((dist % 60000) / 1000);
+      setTimeLeft(`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [match.date]);
 
   return (
-    <div className="page profile-page">
-      <div className="profile-header">
-        <img src={userAvatar} alt="Profile" className="profile-main-avatar" />
-        <h2>{userName}</h2>
-      </div>
-
-      <div className="profile-section">
-        <h3>{t.myArticles} 📰</h3>
-        {myArticles.length === 0 ? (
-          <p className="no-data-msg">{t.noData}</p>
-        ) : (
-          <div className="articles-feed">
-            {myArticles.map(a => (
-              <div key={a.id} className="article-card my-article-card">
-                <div className="article-content-wrapper">
-                  <h4>{a.title}</h4>
-                  <small>{new Date(a.created_at).toLocaleDateString()}</small>
-                  <p>{a.content}</p>
-                  <span className="likes-count">❤️ {a.likes || 0}</span>
-                </div>
-                {/* כפתור המחיקה */}
-                <button className="delete-btn" onClick={() => handleDelete(a.id)}>
-                  {t.deleteBtn}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="match-status-bar">
+      <div className="countdown-status">
+        <span>{t.nextMatch}:</span> <b>{match.home} vs {match.away}</b> <span className="timer-box">{timeLeft}</span>
       </div>
     </div>
   );
 };
 
-// --- Main App ---
+// --- Helper: Rank Badge ---
+const UserRankBadge = ({ authorName, articlesData, commentsData, predictionsData, t }) => {
+  const artCount = articlesData?.filter(a => a.author === authorName).length || 0;
+  const comCount = commentsData?.filter(c => c.author === authorName).length || 0;
+  const likes = articlesData?.filter(a => a.author === authorName).reduce((s, a) => s + (a.likes || 0), 0) || 0;
+  const predPts = predictionsData?.filter(p => p.username === authorName).reduce((s, p) => s + (p.points_earned || 0), 0) || 0;
+
+  const score = (artCount * 5) + (comCount * 2) + (likes * 10) + predPts;
+  let rank = t.rank0, cls = "rank-0";
+  if (score >= 150) { rank = t.rank3; cls = "rank-3"; }
+  else if (score >= 50) { rank = t.rank2; cls = "rank-2"; }
+  else if (score >= 15) { rank = t.rank1; cls = "rank-1"; }
+
+  return <span className={`user-rank-badge ${cls}`} title={`ניקוד מוניטין: ${score}`}>{rank}</span>;
+};
+
+// --- Sub-Component: Live Chat ---
+const LiveChat = ({ t, user }) => {
+  const [msgs, setMsgs] = useState([]);
+  const [input, setInput] = useState("");
+
+  useEffect(() => {
+    supabase.from('live_chat').select('*').order('created_at', { ascending: false }).limit(10).then(({data}) => setMsgs(data?.reverse() || []));
+    const sub = supabase.channel('chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'live_chat' }, (p) => setMsgs(prev => [...prev, p.new])).subscribe();
+    return () => supabase.removeChannel(sub);
+  }, []);
+
+  const send = async (e) => {
+    e.preventDefault();
+    if (!input.trim() || !user) return;
+    await supabase.from('live_chat').insert([{ content: input, author: user.email.split('@')[0], avatar_url: user.user_metadata.avatar_url, user_email: user.email }]);
+    setInput("");
+  };
+
+  return (
+    <div className="live-chat-container">
+      <h3>{t.liveChat}</h3>
+      <div className="chat-messages">
+        {msgs.map(m => (
+          <div key={m.id} className={`chat-bubble ${user?.email === m.user_email ? 'my-msg' : ''}`}>
+            <img src={m.avatar_url} className="chat-avatar" alt="av" />
+            <div className="msg-content"><strong>{m.author}</strong><span>{m.content}</span></div>
+          </div>
+        ))}
+      </div>
+      {user ? (
+        <form onSubmit={send} className="chat-input-area">
+          <input value={input} onChange={e => setInput(e.target.value)} placeholder="..." />
+          <button type="submit">↗️</button>
+        </form>
+      ) : <p className="login-msg">התחבר כדי לצ'אט</p>}
+    </div>
+  );
+};
+
+// --- Home Components ---
+const LaLigaTable = ({ t }) => {
+  const data = [
+    { pos: 1, name: "Real Madrid", p: 38, pts: 95 },
+    { pos: 2, name: "Barcelona", p: 38, pts: 85 },
+    { pos: 3, name: "Girona", p: 38, pts: 81 },
+    { pos: 4, name: "Atlético Madrid", p: 38, pts: 76 }
+  ];
+  return (
+    <div className="league-table-container">
+      <h3 className="section-title">{t.leagueTable} 🏆</h3>
+      <table className="league-table">
+        <thead><tr><th>#</th><th className="team-col">{t.team}</th><th>{t.played}</th><th>{t.points}</th></tr></thead>
+        <tbody>
+          {data.map(i => (
+            <tr key={i.pos} className={i.name === "Real Madrid" ? "highlight-rm" : ""}>
+              <td>{i.pos}</td><td className="team-col">{i.name}</td><td>{i.p}</td><td>{i.pts}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const HomeFeed = ({ t }) => {
+  const [news, setNews] = useState([]);
+  useEffect(() => {
+    supabase.from('articles').select('*').order('created_at', { ascending: false }).limit(3).then(({data}) => setNews(data || []));
+  }, []);
+  return (
+    <div className="home-feed-container">
+      <h3 className="section-title">{t.latestNews} 🔥</h3>
+      <div className="feed-grid">
+        {news.map(a => (
+          <div key={a.id} className="feed-card">
+            <h4>{a.title}</h4>
+            <p>{a.content.substring(0, 80)}...</p>
+            <Link to="/news" className="read-more-btn">{t.readMore}</Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- Page: Community ---
+const CommunityNews = ({ t, user }) => {
+  const [articles, setArticles] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [preds, setPreds] = useState([]);
+  const [newArt, setNewArt] = useState({ title: '', content: '' });
+
+  const fetchData = async () => {
+    const { data: art } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
+    const { data: com } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
+    const { data: pr } = await supabase.from('predictions').select('*');
+    setArticles(art || []); setComments(com || []); setPreds(pr || []);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handlePost = async () => {
+    if (!newArt.title || !newArt.content) return;
+    await supabase.from('articles').insert([{ title: newArt.title, content: newArt.content, author: user.email, avatar_url: user.user_metadata.avatar_url }]);
+    setNewArt({ title: '', content: '' }); fetchData();
+  };
+
+  return (
+    <div className="page">
+      {user && (
+        <div className="news-form">
+          <input placeholder="כותרת הכתבה" value={newArt.title} onChange={e => setNewArt({...newArt, title: e.target.value})} />
+          <textarea placeholder="מה אתם חושבים?" value={newArt.content} onChange={e => setNewArt({...newArt, content: e.target.value})} />
+          <button className="action-btn" onClick={handlePost}>פרסם</button>
+        </div>
+      )}
+      <div className="articles-feed">
+        {articles.map(a => (
+          <div key={a.id} className="article-card">
+            <div className="author-info">
+              <img src={a.avatar_url} className="author-avatar" alt="av" />
+              <div className="author-details">
+                <strong>{a.author}</strong>
+                <UserRankBadge authorName={a.author} articlesData={articles} commentsData={comments} predictionsData={preds} t={t} />
+              </div>
+            </div>
+            <h3>{a.title}</h3>
+            <p>{a.content}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// --- Main App Component ---
 function App() {
   const [lang, setLang] = useState('he');
   const [session, setSession] = useState(null);
@@ -218,346 +242,47 @@ function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    return () => subscription.unsubscribe();
+    supabase.auth.onAuthStateChange((_e, s) => setSession(s));
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
-
   return (
-    <Router>
-      <div className="app-container" dir={lang === 'he' ? 'rtl' : 'ltr'}>
-        <nav className="navbar">
-          <h1 className="logo">Real Madrid Galacticos</h1>
-          <div className="nav-links">
-            <button className="lang-toggle" onClick={() => setLang(lang === 'he' ? 'en' : 'he')}>{t.langBtn}</button>
-            <Link to="/">{t.home}</Link>
-            <Link to="/news">{t.news}</Link>
-            <Link to="/squad">{t.squad}</Link>
-            <Link to="/predictions">{t.predictions}</Link>
+    <div className="app-container" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+      <nav className="navbar">
+        <MatchStatusBar t={t} />
+        <h1 className="logo">Madrid<span>Fans</span></h1>
+        <div className="nav-links">
+          <Link to="/">ראשי</Link>
+          <Link to="/news">{t.news}</Link>
+          {session ? (
+            <>
+              {session.user.email === ADMIN_EMAIL && <Link to="/admin" className="admin-link">ניהול</Link>}
+              <button className="logout-btn" onClick={() => supabase.auth.signOut()}>{t.logout}</button>
+            </>
+          ) : (
+            <button className="login-btn-nav" onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}>{t.login}</button>
+          )}
+        </div>
+      </nav>
 
-            <Link to="/predictions">{t.predictions}</Link>
-            
-            {session ? (
-              <>
-                <Link to="/profile" className="profile-nav-link">{t.profile}</Link>
-                <button className="logout-btn" onClick={handleLogout}>{t.logout}</button>
-              </>
-            ) : (
-            
-            {/* אם מחובר - התנתק. אם אורח - כפתור התחברות */}
-            {session ? (
-              <button className="logout-btn" onClick={handleLogout}>{t.logout}</button>
-            ) : (
-              <Link to="/login" className="login-btn-nav">{t.login}</Link>
-            )}
-          </div>
-        </nav>
-
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<div className="page"><h2>{t.welcome}</h2><p>{t.subWelcome}</p></div>} />
-            <Route path="/news" element={<CommunityNews t={t} user={session?.user} />} />
-            <Route path="/squad" element={<SquadBuilder t={t} />} />
-            <Route path="/predictions" element={<Predictions t={t} user={session?.user} />} />
-            <Route path="/profile" element={<Profile t={t} user={session?.user} />} />
-            {/* עמוד התחברות ייעודי */}
-            <Route path="/login" element={<AuthScreen t={t} />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={
+            <>
+              <div className="hero-section"><h2>{t.welcome}</h2><p>{t.subWelcome}</p></div>
+              <div className="home-content-grid">
+                <HomeFeed t={t} />
+                <div className="side-column">
+                  <LaLigaTable t={t} />
+                  <LiveChat t={t} user={session?.user} />
+                </div>
+              </div>
+            </>
+          } />
+          <Route path="/news" element={<CommunityNews t={t} user={session?.user} />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
-
-const CommunityNews = ({ t, user }) => {
-  const [articles, setArticles] = useState([]);
-  const [comments, setComments] = useState([]);
-  const [newArticle, setNewArticle] = useState({ title: '', content: '' });
-  const [showComments, setShowComments] = useState({});
-  const [commentInputs, setCommentInputs] = useState({}); 
-
-// --- NEW: Extracting Google Data Safely ---
-  const metadata = user?.user_metadata || {};
-  
-  // Safe extraction: Only try to split email if user and user.email exist
-  const pseudoName = user?.email ? user.email.split('@')[0] : 'Fan';
-  
-  const userName = metadata.full_name || pseudoName;
-  const userAvatar = metadata.avatar_url || `https://ui-avatars.com/api/?name=${userName}&background=38bdf8&color=0f172a&bold=true`;
-
-  const [likedArticles, setLikedArticles] = useState(() => {
-    const saved = localStorage.getItem('madridFansLikes');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  useEffect(() => { fetchArticles(); fetchComments(); }, []);
-
-  const fetchArticles = async () => {
-    const { data } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
-    if (data) setArticles(data);
-  };
-
-  const fetchComments = async () => {
-    const { data } = await supabase.from('comments').select('*').order('created_at', { ascending: true });
-    if (data) setComments(data);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.from('articles').insert([{ 
-      title: newArticle.title, 
-      content: newArticle.content, 
-      author: userName, // השם האמיתי מגוגל
-      avatar_url: userAvatar // התמונה מגוגל
-    }]);
-    if (!error) { setNewArticle({ title: '', content: '' }); fetchArticles(); }
-  };
-
-  const handleLike = async (id, currentLikes) => {
-    if (likedArticles.includes(id)) return;
-    const { error } = await supabase.from('articles').update({ likes: currentLikes + 1 }).eq('id', id);
-    if (!error) {
-      const updatedLikes = [...likedArticles, id];
-      setLikedArticles(updatedLikes);
-      localStorage.setItem('madridFansLikes', JSON.stringify(updatedLikes));
-      fetchArticles();
-    }
-  };
-
-  const handleCommentSubmit = async (articleId) => {
-    const input = commentInputs[articleId];
-    if (!input || !input.content) return;
-    
-    const { error } = await supabase.from('comments').insert([{ 
-      article_id: articleId, 
-      author: userName, // השם האמיתי מגוגל
-      content: input.content,
-      avatar_url: userAvatar // התמונה מגוגל
-    }]);
-
-    if (!error) {
-      setCommentInputs({ ...commentInputs, [articleId]: { content: '' } });
-      fetchComments();
-    }
-  };
-
-  const shareToTelegram = (title) => {
-    const url = encodeURIComponent("https://realmadridgalacticos.vercel.app/news");
-    const text = encodeURIComponent(`קראתי עכשיו את הכתבה "${title}" באפליקציית ריאל מדריד גלאקטיקוס! כנסו לקרוא 👑⚽`);
-    window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
-  };
-
-  return (
-    <div className="page">
-      <h2>{t.news} 📰</h2>
-      
-      {/* חסימה חכמה: רק מי שמחובר יכול לראות את טופס הכתיבה */}
-      {user ? (
-        <>
-          <div className="compose-header">
-             <img src={userAvatar} alt="My Avatar" className="mini-avatar" />
-             <span>פרסם כ-<strong>{userName}</strong></span>
-          </div>
-          <form className="news-form" onSubmit={handleSubmit}>
-            <input type="text" placeholder={t.articleTitle} value={newArticle.title} onChange={(e) => setNewArticle({...newArticle, title: e.target.value})} required />
-            <textarea placeholder={t.writeHere} value={newArticle.content} onChange={(e) => setNewArticle({...newArticle, content: e.target.value})} required rows="4" />
-            <button type="submit" className="action-btn">{t.postArticle}</button>
-          </form>
-        </>
-      ) : (
-        <div className="login-prompt">
-          <p>רוצה לפרסם כתבה משלך?</p>
-          <Link to="/login" className="action-btn">התחבר כדי לכתוב</Link>
-        </div>
-      )}
-      
-      <div className="articles-feed">
-        {articles.map(a => {
-          const articleComments = comments.filter(c => c.article_id === a.id);
-          const hasLiked = likedArticles.includes(a.id);
-          // תמונת ברירת מחדל לכתבות ישנות שאין להן תמונה
-          const displayAvatar = a.avatar_url || `https://ui-avatars.com/api/?name=${a.author}&background=f8fafc&color=0f172a`;
-
-          return (
-            <div key={a.id} className="article-card">
-              <h3>{a.title}</h3>
-              
-              {/* NEW: Author info with picture */}
-              <div className="author-info">
-                <img src={displayAvatar} alt="Author" className="author-avatar" />
-                <small>{a.author} • {new Date(a.created_at).toLocaleDateString()}</small>
-              </div>
-
-              <p>{a.content}</p>
-              
-              <div className="article-actions">
-                <button className="action-icon-btn like-btn" onClick={() => handleLike(a.id, a.likes || 0)} style={{ opacity: hasLiked ? 0.5 : 1, cursor: hasLiked ? 'not-allowed' : 'pointer' }}>
-                  {hasLiked ? '🤍' : '❤️'} {a.likes || 0} {t.like}
-                </button>
-                <button className="action-icon-btn comment-btn" onClick={() => setShowComments({...showComments, [a.id]: !showComments[a.id]})}>
-                  💬 {articleComments.length} {t.comments}
-                </button>
-                <button className="action-icon-btn tg-btn" onClick={() => shareToTelegram(a.title)}>
-                  ✈️ {t.share}
-                </button>
-              </div>
-
-              {showComments[a.id] && (
-                <div className="comments-section">
-                  <div className="comments-list">
-                    {articleComments.map(c => (
-                      <div key={c.id} className="comment-bubble">
-                        <img src={c.avatar_url || `https://ui-avatars.com/api/?name=${c.author}&background=f8fafc&color=0f172a`} alt="Commenter" className="comment-avatar" />
-                        <div className="comment-content">
-                           <strong>{c.author}</strong> 
-                           <span>{c.content}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="add-comment-box">
-                    <img src={userAvatar} alt="Me" className="mini-avatar" />
-                    <input type="text" placeholder={t.writeComment} value={commentInputs[a.id]?.content || ''} onChange={(e) => setCommentInputs({...commentInputs, [a.id]: {content: e.target.value}})} />
-                    <button onClick={() => handleCommentSubmit(a.id)}>{t.send}</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-// --- Squad Builder Component ---
-const SquadBuilder = ({ t, user }) => {
-  const [lineup, setLineup] = useState({ GK: null, DF1: null, DF2: null, DF3: null, DF4: null, MF1: null, MF2: null, MF3: null, FW1: null, FW2: null, FW3: null });
-  
-  const addToLineup = (player) => {
-    const isAlreadyInLineup = Object.values(lineup).some(p => p && p.id === player.id);
-    if (isAlreadyInLineup) return;
-    if (player.pos === "GK") setLineup(prev => ({ ...prev, GK: player }));
-    else if (player.pos === "DF") {
-      if (!lineup.DF1) setLineup(prev => ({ ...prev, DF1: player }));
-      else if (!lineup.DF2) setLineup(prev => ({ ...prev, DF2: player }));
-      else if (!lineup.DF3) setLineup(prev => ({ ...prev, DF3: player }));
-      else if (!lineup.DF4) setLineup(prev => ({ ...prev, DF4: player }));
-    } else if (player.pos === "MF") {
-      if (!lineup.MF1) setLineup(prev => ({ ...prev, MF1: player }));
-      else if (!lineup.MF2) setLineup(prev => ({ ...prev, MF2: player }));
-      else if (!lineup.MF3) setLineup(prev => ({ ...prev, MF3: player }));
-    } else if (player.pos === "FW") {
-      if (!lineup.FW1) setLineup(prev => ({ ...prev, FW1: player }));
-      else if (!lineup.FW2) setLineup(prev => ({ ...prev, FW2: player }));
-      else if (!lineup.FW3) setLineup(prev => ({ ...prev, FW3: player }));
-    }
-  };
-
-  const saveLineup = async () => {
-    if (!user) return alert("You must be logged in!");
-    await supabase.from('lineups').insert([{ formation_data: lineup }]);
-    alert("Saved!");
-  };
-
-  return (
-    <div className="page">
-      <h2>{t.squad} ⚽</h2>
-      <div className="builder-container">
-        <div className="pitch full-pitch">
-          <div className="attack-row">
-            <div className="position">{lineup.FW1 ? <img src={lineup.FW1.img} alt="FW" /> : "LW"}</div>
-            <div className="position">{lineup.FW2 ? <img src={lineup.FW2.img} alt="FW" /> : "ST"}</div>
-            <div className="position">{lineup.FW3 ? <img src={lineup.FW3.img} alt="FW" /> : "RW"}</div>
-          </div>
-          <div className="midfield-row">
-            <div className="position">{lineup.MF1 ? <img src={lineup.MF1.img} alt="MF" /> : "CM"}</div>
-            <div className="position">{lineup.MF2 ? <img src={lineup.MF2.img} alt="MF" /> : "CDM"}</div>
-            <div className="position">{lineup.MF3 ? <img src={lineup.MF3.img} alt="MF" /> : "CM"}</div>
-          </div>
-          <div className="defense-row">
-            <div className="position">{lineup.DF1 ? <img src={lineup.DF1.img} alt="DF" /> : "LB"}</div>
-            <div className="position">{lineup.DF2 ? <img src={lineup.DF2.img} alt="DF" /> : "CB"}</div>
-            <div className="position">{lineup.DF3 ? <img src={lineup.DF3.img} alt="DF" /> : "CB"}</div>
-            <div className="position">{lineup.DF4 ? <img src={lineup.DF4.img} alt="DF" /> : "RB"}</div>
-          </div>
-          <div className="goalie-row"><div className="position">{lineup.GK ? <img src={lineup.GK.img} alt="GK" /> : "GK"}</div></div>
-        </div>
-        <div className="player-list extended-list">
-          <div className="players-grid">
-            {playersData.map(p => (<div key={p.id} className="player-card" onClick={() => addToLineup(p)}><img src={p.img} alt={p.name} /><p>{p.name}</p></div>))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Smart Gating */}
-      {user ? (
-        <button className="action-btn" onClick={saveLineup}>{t.saveLineup}</button>
-      ) : (
-        <div className="login-prompt">
-          <p>רוצה לשמור את ההרכב שלך ולשתף עם כולם?</p>
-          <Link to="/login" className="action-btn">התחבר כדי לשמור</Link>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// --- Predictions Component ---
-const Predictions = ({ t, user }) => {
-  const [prediction, setPrediction] = useState({ home: '', away: '', scorer: '' });
-
-  // Safe extraction of user data (if logged in)
-  const metadata = user?.user_metadata || {};
-  const pseudoName = user?.email ? user.email.split('@')[0] : 'Fan';
-  const userName = metadata.full_name || pseudoName;
-
-  const handleSubmit = async () => {
-    if (!user) return;
-    await supabase.from('predictions').insert([{ 
-      username: userName, 
-      home_score: prediction.home, 
-      away_score: prediction.away, 
-      scorer: prediction.scorer 
-    }]);
-    alert("Saved!");
-  };
-
-  return (
-    <div className="page">
-      <h2>{t.predictions} 🔮</h2>
-      
-      {user ? (
-        <div className="news-form prediction-form">
-          <div className="compose-header">
-             <span>שולח תחזית כ-<strong>{userName}</strong></span>
-          </div>
-          <div className="prediction-board">
-            <div className="team-pred">
-               <h3>R. Madrid</h3>
-               <input type="number" placeholder="0" onChange={(e) => setPrediction({...prediction, home: e.target.value})} />
-            </div>
-            <div className="vs-text">VS</div>
-            <div className="team-pred">
-               <h3>Opponent</h3>
-               <input type="number" placeholder="0" onChange={(e) => setPrediction({...prediction, away: e.target.value})} />
-            </div>
-          </div>
-          <button className="action-btn" onClick={handleSubmit}>{t.submitPred}</button>
-        </div>
-      ) : (
-         <div className="login-prompt">
-          <p>מי לדעתך ינצח במשחק הבא?</p>
-          <Link to="/login" className="action-btn">התחבר כדי לשלוח תחזית</Link>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default App;
