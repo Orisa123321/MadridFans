@@ -1,19 +1,45 @@
-/* --- Global Reset & Spacing --- */
+/* --- ייבוא פונטים מקצועיים מגוגל --- */
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&family=Montserrat:wght@400;700;900&display=swap');
+
+/* --- Global Variables --- */
 :root {
-  --bg-color: #0f172a;
-  --card-bg: #1e293b;
+  --bg-color: #0b1120;       /* רקע כהה עמוק יותר */
+  --card-bg: rgba(30, 41, 59, 0.7); /* שקיפות קלה לאפקט מודרני */
   --text-color: #f8fafc;
-  --accent-color: #38bdf8;
-  --nav-bg: #0b1120;
+  --accent-color: #fbbf24;   /* שינינו את התכלת לזהב יוקרתי! */
+  --nav-bg: rgba(15, 23, 42, 0.95);
 }
 
 html, body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* פונט עברי ולאחריו פונט אנגלי */
+  font-family: 'Heebo', 'Montserrat', sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
   min-height: 100vh;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(251, 191, 36, 0.05) 0px, transparent 50%); /* נגיעות אור עדינות ברקע */
+}
+
+/* שדרוג קופסת הכניסה בעמוד הראשי */
+.page:first-of-type {
+  background: linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.9) 100%);
+  border-top: 4px solid var(--accent-color);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.logo { 
+  margin: 0; 
+  color: white; 
+  font-size: 1.8rem; 
+  font-weight: 900; 
+  letter-spacing: -0.5px;
+}
+
+.logo span {
+  color: var(--accent-color); /* מילה אחת בזהב */
 }
 
 .app-container { min-height: 100vh; }
@@ -534,3 +560,375 @@ html, body {
   font-size: 0.85rem;
   color: #94a3b8;
 }
+
+/* --- Hero Section (Homepage Entrance) --- */
+.hero-section {
+  /* תמונת רקע של אצטדיון עם שכבת צבע שקופה-כהה מעליה כדי להבליט את הטקסט */
+  background-image: 
+    linear-gradient(rgba(11, 17, 32, 0.6), rgba(11, 17, 32, 0.95)), 
+    url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80');
+  background-size: cover;
+  background-position: center;
+  padding: 120px 20px;
+  border-radius: 16px;
+  text-align: center;
+  border-top: 4px solid var(--accent-color);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  margin-bottom: 40px;
+}
+
+.hero-section h2 {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: white;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.5); /* צל לטקסט שיראה תלת מימדי */
+}
+
+.hero-section p {
+  font-size: 1.3rem;
+  color: #cbd5e1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* התאמה למסכים קטנים (טלפונים) */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 80px 15px;
+  }
+  .hero-section h2 {
+    font-size: 2.2rem;
+  }
+}
+
+/* --- Match Status Bar Styling --- */
+.match-status-bar {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px); /* אפקט זכוכית מטושטשת */
+  border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 8px 0;
+  position: absolute; /* יושב בראש הנאב-בר */
+  top: 0;
+  left: 0;
+  z-index: 10;
+  font-size: 0.85rem;
+}
+
+.live-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.live-indicator {
+  color: #ef4444;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ef4444;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.live-score {
+  background: var(--accent-color);
+  color: #0f172a;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-weight: 900;
+  margin: 0 10px;
+}
+
+.match-minute {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+/* התאמת הנאב-בר שיהיה לו מקום לבר החדש */
+.navbar {
+  padding-top: 45px; /* יוצר מקום לבר מלמעלה */
+  position: relative;
+}
+
+.countdown-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.match-label {
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.match-teams {
+  font-weight: bold;
+  color: white;
+}
+
+.timer {
+  background: rgba(251, 191, 36, 0.1); /* רקע זהב שקוף */
+  color: var(--accent-color);
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-family: monospace; /* פונט של מספרים דיגיטליים */
+  font-weight: bold;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+/* --- Home Feed --- */
+.home-feed-container {
+  margin-top: 10px;
+  padding-bottom: 40px;
+}
+
+.section-title {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.feed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.feed-card {
+  background: var(--nav-bg);
+  padding: 25px;
+  border-radius: 16px;
+  border-top: 3px solid var(--accent-color);
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+}
+
+.feed-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.feed-avatar {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.feed-card h4 {
+  color: white;
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+}
+
+.feed-card p {
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  margin: 0 0 20px 0;
+  flex-grow: 1; /* דוחף את הכפתור למטה */
+}
+
+.feed-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #334155;
+  padding-top: 15px;
+}
+
+.read-more-btn {
+  background: transparent;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  padding: 5px 15px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.read-more-btn:hover {
+  background: var(--accent-color);
+  color: #0f172a;
+}
+
+/* --- Admin Panel --- */
+.admin-section {
+  background: var(--nav-bg);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.admin-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  padding: 10px 15px;
+  border-radius: 8px;
+  border-right: 4px solid #ef4444; /* פס אדום לסמן מחיקה אפשרית */
+}
+
+.admin-card strong { color: white; display: block; margin-bottom: 4px; }
+.admin-card small { color: #94a3b8; font-size: 0.8rem; }
+.mt-4 { margin-top: 30px; }
+
+.admin-nav-link {
+  color: #ef4444 !important; /* אדום מנהל */
+  font-weight: 900 !important;
+  border: 1px dashed #ef4444 !important;
+}
+
+/* --- Homepage Layout (Dashboard Style) --- */
+.home-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* פיד הכתבות תופס 2/3, הטבלה 1/3 */
+  gap: 30px;
+  align-items: start;
+}
+
+/* במסכים קטנים (טלפונים), הם יסתדרו אחד מתחת לשני */
+@media (max-width: 992px) {
+  .home-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- League Table --- */
+.league-table-container {
+  background: var(--nav-bg);
+  padding: 25px;
+  border-radius: 16px;
+  border-top: 3px solid var(--accent-color);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.league-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+.league-table th {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #334155;
+  text-transform: uppercase;
+}
+
+.league-table td {
+  padding: 14px 5px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+.league-table .team-col {
+  text-align: left;
+}
+
+[dir="rtl"] .league-table .team-col {
+  text-align: right;
+}
+
+/* ההדגשה של ריאל מדריד */
+.highlight-rm {
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.highlight-rm td {
+  color: var(--accent-color);
+  font-weight: 900;
+  font-size: 1.05rem;
+}
+
+/* --- Gamification & Ranks --- */
+.user-rank-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  margin-top: 3px;
+}
+
+/* שחקן נוער - ירוק עדין */
+.rank-0 { background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid #4ade80; }
+/* שחקן בוגרים - תכלת */
+.rank-1 { background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid #38bdf8; }
+/* גלאקטיקו - כסף מבריק */
+.rank-2 { background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%); color: #0f172a; box-shadow: 0 2px 5px rgba(255,255,255,0.2); border: none; }
+/* אגדת מועדון - זהב יוקרתי! */
+.rank-3 { background: linear-gradient(135deg, #fde047 0%, #fbbf24 100%); color: #0f172a; box-shadow: 0 2px 8px rgba(251,191,36,0.4); border: none; text-transform: uppercase;}
+
+.author-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+[dir="rtl"] .author-details {
+  align-items: flex-end;
+}
+
+.author-name-date {
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.author-name-date strong {
+  color: white;
+  font-size: 0.95rem;
+}
+
+.commenter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
